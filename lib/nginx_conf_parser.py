@@ -4,6 +4,7 @@ from _io import TextIOWrapper
 from os.path import isfile
 
 from core.event_context import EventContext
+from core.main_context import MainContext
 
 
 class NginxConfParser:
@@ -25,7 +26,7 @@ class NginxConfParser:
 
         self._extract_events_context()
         self.event_context = EventContext(self.event_context_string)
-        self._extract_http_context()
+        self.main_context = MainContext(self.content)
 
     def _extract_events_context(self):
         try:
