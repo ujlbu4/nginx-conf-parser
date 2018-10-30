@@ -9,7 +9,7 @@ setup(
     packages=['nginx-conf-parser'],
     include_package_data=True,
     description='Python package for parsing nginx configuration file',
-    long_description=open('README').read(),
+    long_description=open('README.md').read(),
     install_requires=[
         #
     ]
