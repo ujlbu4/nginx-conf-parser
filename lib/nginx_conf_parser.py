@@ -2,10 +2,8 @@
 import re
 from _io import TextIOWrapper
 from os.path import isfile
-from core.event_context import EventContext
 
-RE_USER = r'user\s+(.*);'
-RE_WORKER_PROCESSES = r'worker_process'
+from core.event_context import EventContext
 
 
 class NginxConfParser:
