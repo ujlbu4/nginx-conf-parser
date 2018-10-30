@@ -30,7 +30,3 @@ class MainContext(Context):
         super(MainContext, self)._extract_values('worker_rlimit_nofile', None)
         super(MainContext, self)._extract_values('worker_shutdown_timeout', None)
 
-
-if __name__ == '__main__':
-    mc = MainContext("working_directory /home/user;")
-    print(mc.working_directory)
