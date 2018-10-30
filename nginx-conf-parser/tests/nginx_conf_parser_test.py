@@ -2,8 +2,7 @@
 import unittest
 from os.path import dirname
 
-from NginxConfParser import NginxConfParser
-from core.EventContext import EventContext
+from nginx_conf_parser import NginxConfParser
 
 
 class NginxConfParserTest(unittest.TestCase):

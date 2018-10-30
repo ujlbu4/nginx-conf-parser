@@ -1,6 +1,6 @@
 # coding=utf-8
 import unittest
-from core.EventContext import EventContext
+from core.event_context import EventContext
 
 
 class EventContextTest(unittest.TestCase):
@@ -13,6 +13,7 @@ class EventContextTest(unittest.TestCase):
         self.assertIsNone(event_context.use)
         self.assertEqual(event_context.worker_aio_requests, '32')
         self.assertEqual(event_context.worker_connections, '512')
+        self.assertEqual(event_context.error_log, 'logs/error.log error')
 
     def test_simple_directive_extraction(self):
         # accept_mutex
@@ -46,6 +47,10 @@ class EventContextTest(unittest.TestCase):
         # worker_connections
         event_context = EventContext("events { worker_connections 1024; }")
         self.assertEqual(event_context.worker_connections, '1024')
+
+        # error_log
+        event_context = EventContext("events { error_log custom/error.log; }")
+        self.assertEqual(event_context.error_log, 'custom/error.log')
 
 
 if __name__ == '__main__':
