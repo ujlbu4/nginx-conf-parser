@@ -29,4 +29,5 @@ class MainContext(Context):
         super(MainContext, self)._extract_values('worker_rlimit_core', None)
         super(MainContext, self)._extract_values('worker_rlimit_nofile', None)
         super(MainContext, self)._extract_values('worker_shutdown_timeout', None)
+        super(MainContext, self)._extract_values('google_perftools_profiles', None)
 
