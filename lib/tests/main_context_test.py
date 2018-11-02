@@ -27,6 +27,7 @@ class MainContextTest(unittest.TestCase):
         self.assertIsNone(main_context.worker_rlimit_nofile)
         self.assertIsNone(main_context.worker_shutdown_timeout)
         self.assertIsNone(main_context.working_directory)
+        self.assertIsNone(main_context.google_perftools_profiles)
 
     def test_simple_directive_extraction(self):
         # daemon
@@ -115,6 +116,10 @@ class MainContextTest(unittest.TestCase):
         # working_directory
         main_context = MainContext("working_directory /home/user;")
         self.assertEqual(main_context.working_directory, '/home/user')
+
+        # google_perftools_profiles
+        main_context = MainContext('google_perftools_profiles /some/file;')
+        self.assertEqual(main_context.google_perftools_profiles, '/some/file')
 
 
 if __name__ == '__main__':
