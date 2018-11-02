@@ -1,6 +1,7 @@
 # coding=utf-8
 import unittest
-from core.event_context import EventContext
+
+from core.events_context import EventContext
 
 
 class EventContextTest(unittest.TestCase):
