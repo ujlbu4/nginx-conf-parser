@@ -5,121 +5,151 @@ from core.main_context import MainContext
 
 
 class MainContextTest(unittest.TestCase):
-    def test_default_directive_values_extraction(self):
-        main_context = MainContext("")
-        self.assertEqual(main_context.daemon, 'on')
-        self.assertIsNone(main_context.debug_points)
-        self.assertEqual(main_context.env, 'TZ')
-        self.assertEqual(main_context.error_log, 'logs/error.log error')
-        self.assertIsNone(main_context.load_module)
-        self.assertEqual(main_context.lock_file, 'logs/nginx.lock')
-        self.assertEqual(main_context.master_process, 'on')
-        self.assertEqual(main_context.pcre_jit, 'off')
-        self.assertEqual(main_context.pid, 'logs/nginx.pid')
-        self.assertIsNone(main_context.ssl_engine)
-        self.assertEqual(main_context.thread_pool, 'default threads=32 max_queue=65536')
-        self.assertIsNone(main_context.timer_resolution)
-        self.assertEqual(main_context.user, 'nobody nobody')
-        self.assertIsNone(main_context.worker_cpu_affinity)
-        self.assertEqual(main_context.worker_priority, '0')
-        self.assertEqual(main_context.worker_processes, '1')
-        self.assertIsNone(main_context.worker_rlimit_core)
-        self.assertIsNone(main_context.worker_rlimit_nofile)
-        self.assertIsNone(main_context.worker_shutdown_timeout)
-        self.assertIsNone(main_context.working_directory)
-        self.assertIsNone(main_context.google_perftools_profiles)
+    def setUp(self):
+        self.context = MainContext()
 
-    def test_simple_directive_extraction(self):
-        # daemon
-        main_context = MainContext("daemon off;")
-        self.assertEqual(main_context.daemon, 'off')
+    def test_daemon_extraction(self):
+        self.assertEqual('on', self.context.daemon)
 
-        # debug points
-        main_context = MainContext("debug_points abort;")
-        self.assertEqual(main_context.debug_points, 'abort')
-        main_context = MainContext("debug_points stop;")
-        self.assertEqual(main_context.debug_points, 'stop')
+        self.context.load("daemon off;")
+        self.assertEqual('off', self.context.daemon)
 
-        # env
-        main_context = MainContext("env MALLOC_OPTIONS;")
-        self.assertIsInstance(main_context.env, str)
-        self.assertEqual(main_context.env, 'MALLOC_OPTIONS')
-        main_context = MainContext("env MALLOC_OPTIONS; env PERL5LIB=/data/site/modules;")
-        self.assertIsInstance(main_context.env, list)
-        self.assertIn('MALLOC_OPTIONS', main_context.env)
-        self.assertIn('PERL5LIB=/data/site/modules', main_context.env)
+    def test_debug_points_extraction(self):
+        self.assertIsNone(self.context.debug_points)
 
-        # error_log
-        main_context = MainContext("error_log endpoint/error.log warn;")
-        self.assertEqual(main_context.error_log, "endpoint/error.log warn")
+        self.context.load("debug_points abort;")
+        self.assertEqual('abort', self.context.debug_points)
 
-        # load_module
-        main_context = MainContext("load_module modules/ngx_mail_module.so;")
-        self.assertEqual(main_context.load_module, 'modules/ngx_mail_module.so')
+    def test_env_extraction(self):
+        self.assertEqual(self.context.env, [])
 
-        # lock_file
-        main_context = MainContext("lock_file some/lock/file.lock;")
-        self.assertEqual(main_context.lock_file, "some/lock/file.lock")
+        self.context.load("env NODE_ENV;")
+        self.assertEqual(['NODE_ENV'], self.context.env)
 
-        # master_process
-        main_context = MainContext("master_process off;")
-        self.assertEqual(main_context.master_process, 'off')
+        self.context.load("env NODE_ENV=prod; env MALLOC_OPTIONS;")
+        self.assertEqual(2, len(self.context.env))
+        self.assertIn('NODE_ENV=prod', self.context.env)
+        self.assertIn('MALLOC_OPTIONS', self.context.env)
 
-        # pcre_jit
-        main_context = MainContext("pcre_jit on;")
-        self.assertEqual(main_context.pcre_jit, 'on')
+    def test_error_log_extraction(self):
+        self.assertEqual(dict(file='logs/error.log', level='error'), self.context.error_log)
 
-        # pid
-        main_context = MainContext("pid logs/nginxxxx.pid;")
-        self.assertEqual(main_context.pid, "logs/nginxxxx.pid")
+        self.context.load("error_log logs/error.log;")
+        self.assertEqual(dict(file='logs/error.log', level='error'), self.context.error_log)
 
-        # ssl_engine
-        main_context = MainContext("ssl_engine some-device;")
-        self.assertEqual(main_context.ssl_engine, 'some-device')
+        self.context.load("error_log logs/errors.log warn;")
+        self.assertEqual(dict(file='logs/errors.log', level='warn'), self.context.error_log)
 
-        # thread_pool
-        main_context = MainContext("thread_pool default threads=64 max_queue=65000;")
-        self.assertEqual(main_context.thread_pool, 'default threads=64 max_queue=65000')
+    def test_load_module_extraction(self):
+        self.assertIsNone(self.context.load_module)
 
-        # timer_resolution
-        main_context = MainContext("timer_resolution 100ms;")
-        self.assertEqual(main_context.timer_resolution, "100ms")
+        self.context.load("load_module logs/module/to/load;")
+        self.assertEqual('logs/module/to/load', self.context.load_module)
 
-        # user
-        main_context = MainContext("user www-data www-data;")
-        self.assertEqual(main_context.user, "www-data www-data")
+    def test_lock_file_extraction(self):
+        self.assertEqual('logs/nginx.lock', self.context.lock_file)
 
-        # worker_cpu_affinity
-        main_context = MainContext("worker_cpu_affinity 0001 0010 0100 1000;")
-        self.assertEqual(main_context.worker_cpu_affinity, '0001 0010 0100 1000')
+        self.context.load("lock_file nginx/lock.lock;")
+        self.assertEqual('nginx/lock.lock', self.context.lock_file)
 
-        # worker_priority
-        main_context = MainContext("worker_priority 1;")
-        self.assertEqual(main_context.worker_priority, '1')
+    def test_master_process_extraction(self):
+        self.assertEqual('on', self.context.master_process)
 
-        # worker_processes
-        main_context = MainContext("worker_processes 4;")
-        self.assertEqual(main_context.worker_processes, '4')
+        self.context.load('master_process off;')
+        self.assertEqual('off', self.context.master_process)
 
-        # worker_rlimit_core
-        main_context = MainContext("worker_rlimit_core 12;")
-        self.assertEqual(main_context.worker_rlimit_core, '12')
+    def test_pcre_jit_extraction(self):
+        self.assertEqual('off', self.context.pcre_jit)
 
-        # worker_rlimit_nofile
-        main_context = MainContext("worker_rlimit_nofile 12;")
-        self.assertEqual(main_context.worker_rlimit_nofile, '12')
+        self.context.load('pcre_jit on;')
+        self.assertEqual('on', self.context.pcre_jit)
 
-        # worker_shutdown_timeout
-        main_context = MainContext("worker_shutdown_timeout 100ms;")
-        self.assertEqual(main_context.worker_shutdown_timeout, '100ms')
+    def test_pid_extraction(self):
+        self.assertEqual('logs/nginx.pid', self.context.pid)
 
-        # working_directory
-        main_context = MainContext("working_directory /home/user;")
-        self.assertEqual(main_context.working_directory, '/home/user')
+        self.context.load('pid /some/file.pid;')
+        self.assertEqual('/some/file.pid', self.context.pid)
 
-        # google_perftools_profiles
-        main_context = MainContext('google_perftools_profiles /some/file;')
-        self.assertEqual(main_context.google_perftools_profiles, '/some/file')
+    def test_ssl_engine_extraction(self):
+        self.assertIsNone(self.context.ssl_engine)
+
+        self.context.load('ssl_engine /dev/sda5;')
+        self.assertEqual('/dev/sda5', self.context.ssl_engine)
+
+    def test_thread_pool_extraction(self):
+        self.assertEqual(dict(name='default', threads=32, max_queue=65536), self.context.thread_pool)
+
+        self.context.load('thread_pool threadPool1 threads=6;')
+        self.assertEqual(dict(name='threadPool1', threads=6, max_queue=65536), self.context.thread_pool)
+
+        self.context.load('thread_pool threadPool1 threads=5 max_queue=65432;')
+        self.assertEqual(dict(name='threadPool1', threads=5, max_queue=65432), self.context.thread_pool)
+
+    def test_timer_resolution_extraction(self):
+        self.assertIsNone(self.context.timer_resolution)
+
+        self.context.load('timer_resolution 100ms;')
+        self.assertEqual('100ms', self.context.timer_resolution)
+
+    def test_working_directory_extraction(self):
+        self.assertIsNone(self.context.working_directory)
+
+        self.context.load('working_directory /home/user/directory;')
+        self.assertEqual('/home/user/directory', self.context.working_directory)
+
+    def test_user_extraction(self):
+        self.assertEqual(dict(user='nobody', group='nobody'), self.context.user)
+
+        self.context.load('user user1 user1group;')
+        self.assertEqual(dict(user='user1', group='user1group'), self.context.user)
+
+        self.context.load('user user1;')
+        self.assertEqual(dict(user='user1', group='user1'), self.context.user)
+
+    def test_worker_cpu_affinity_extraction(self):
+        self.assertIsNone(self.context.worker_cpu_affinity)
+
+        self.context.load('worker_cpu_affinity 0001 0010 0100 1000;')
+        self.assertEqual('0001 0010 0100 1000', self.context.worker_cpu_affinity)
+
+        self.context.load('worker_cpu_affinity auto 0001 0010 0100 1000;')
+        self.assertEqual('auto 0001 0010 0100 1000', self.context.worker_cpu_affinity)
+
+    def test_worker_priority_extraction(self):
+        self.assertEqual(0, self.context.worker_priority)
+
+        self.context.load('worker_priority 14;')
+        self.assertEqual(14, self.context.worker_priority)
+
+    def test_worker_processes_extraction(self):
+        self.assertEqual(1, self.context.worker_processes)
+
+        self.context.load('worker_processes 18;')
+        self.assertEqual(18, self.context.worker_processes)
+
+    def test_worker_rlimit_core_extraction(self):
+        self.assertIsNone(self.context.worker_rlimit_core)
+
+        self.context.load('worker_rlimit_core 100Mo;')
+        self.assertEqual('100Mo', self.context.worker_rlimit_core)
+
+    def test_worker_rlimit_nofile_extraction(self):
+        self.assertIsNone(self.context.worker_rlimit_nofile)
+
+        self.context.load('worker_rlimit_nofile 125;')
+        self.assertEqual(125, self.context.worker_rlimit_nofile)
+
+    def test_worker_shutdown_timeout_extraction(self):
+        self.assertIsNone(self.context.worker_shutdown_timeout)
+
+        self.context.load('worker_shutdown_timeout 100ms;')
+        self.assertEqual('100ms', self.context.worker_shutdown_timeout)
+
+    def test_google_perftools_profiles_extraction(self):
+        self.assertIsNone(self.context.google_perftools_profiles)
+
+        self.context.load('google_perftools_profiles /some/file;')
+        self.assertEqual('/some/file', self.context.google_perftools_profiles)
 
 
 if __name__ == '__main__':
