@@ -3,7 +3,7 @@ import re
 from _io import TextIOWrapper
 from os.path import isfile
 
-from core.event_context import EventContext
+from core.events_context import EventContext
 from core.main_context import MainContext
 
 
