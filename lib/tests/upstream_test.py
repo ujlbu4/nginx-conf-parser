@@ -2,7 +2,7 @@
 import re
 import unittest
 
-from core.upstream import Upstream
+from core.upstream_context import UpstreamContext
 
 
 class UpstreamTest(unittest.TestCase):
@@ -39,12 +39,12 @@ class UpstreamTest(unittest.TestCase):
         """.replace('\n', '')
 
         self.parsed = re.findall(r'upstream\s+([a-zA-Z]+)\s+{([^}]*)', self.upstream_string)[0]
-        self.upstream = Upstream(self.parsed[0], self.parsed[1])
+        self.upstream = UpstreamContext(self.parsed[0], self.parsed[1])
 
     def _update_directive(self, initial, new):
         self.upstream_string = self.upstream_string.replace(initial, new)
         self.parsed = re.findall(r'upstream\s+([a-zA-Z]+)\s+{([^}]*)', self.upstream_string)[0]
-        self.upstream = Upstream(self.parsed[0], self.parsed[1])
+        self.upstream = UpstreamContext(self.parsed[0], self.parsed[1])
 
     def test_name_extraction(self):
         self.assertEqual('dynamic', self.upstream.name)

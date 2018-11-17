@@ -2,7 +2,7 @@
 import re
 
 from core.utils import extract_upstream_zone, extract_upstream_server_parameters, extract_context
-from core.upstream import Upstream
+from core.upstream_context import UpstreamContext
 
 
 class StreamContext:
@@ -13,7 +13,7 @@ class StreamContext:
         # extracting upstreams
         upstreams = re.findall(r'upstream\s+([a-zA-Z]+)\s+{([^}]*)', content)
         for upstream in upstreams:
-            self.upstreams.append(Upstream(name=upstream[0], content=upstream[1]))
+            self.upstreams.append(UpstreamContext(name=upstream[0], content=upstream[1]))
             to_append = dict(name=upstream[0], servers=[], zone=extract_upstream_zone(upstream[1]))
             # server directives
             servers = re.findall(r'server\s+([^;]*)', upstream[1])

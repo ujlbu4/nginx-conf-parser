@@ -4,7 +4,7 @@ import re
 from core.utils import extract_upstream_zone
 
 
-class Upstream:
+class UpstreamContext:
     name = None
     servers = []
     zone = None
