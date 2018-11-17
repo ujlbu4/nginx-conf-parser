@@ -4,10 +4,14 @@ from _io import TextIOWrapper
 
 
 def extract_context(conffile, context_name):
-    if not isinstance(conffile, TextIOWrapper):
-        raise TypeError('Invalid configuration file given, must be a file stream')
+    if not isinstance(conffile, TextIOWrapper) or not isinstance(conffile, str):
+        raise TypeError('Invalid configuration file given, must be a file stream or a string')
 
-    content = conffile.read().replace('\n', ' ')
+    if isinstance(conffile, TextIOWrapper):
+        content = conffile.read().replace('\n', ' ')
+    else:
+        content = conffile.replace('\n', ' ')
+
     try:
         context_begin_index = re.search(context_name + '\s+{', content).start()
         context_string = ''
