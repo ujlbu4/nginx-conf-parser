@@ -4,7 +4,7 @@ from _io import TextIOWrapper
 
 
 def extract_context(conffile, context_name):
-    if not isinstance(conffile, TextIOWrapper) or not isinstance(conffile, str):
+    if not isinstance(conffile, TextIOWrapper) and not isinstance(conffile, str):
         raise TypeError('Invalid configuration file given, must be a file stream or a string')
 
     if isinstance(conffile, TextIOWrapper):
