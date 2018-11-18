@@ -1,7 +1,7 @@
 # coding=utf-8
 import re
 
-from core.utils import extract_upstream_zone
+from .utils import extract_upstream_zone
 
 
 class UpstreamContext:
