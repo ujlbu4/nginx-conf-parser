@@ -51,6 +51,8 @@ class ServerContext:
     read_ahead = None
     recursive_error_pages = None
     request_pool_size = None
+    reset_timedout_connection = None
+    resolver = None
 
     def __init__(self, content):
         # extracting location directive
@@ -346,3 +348,24 @@ class ServerContext:
                 # request_pool_size directive
                 request_pool_size = re.search(r'request_pool_size\s+([^;]*)', self._content)
                 self.request_pool_size = request_pool_size.group(1) if request_pool_size else '4k'
+
+                # reset_timedout_connection directive
+                reset_timedout_connection = re.search(r'reset_timedout_connection\s+(on|off);', self._content)
+                self.reset_timedout_connection = reset_timedout_connection.group(
+                    1) if reset_timedout_connection else 'off'
+
+                # resolver directive
+                resolver = re.search(r'resolver\s+([^;]*)', self._content)
+                if resolver:
+                    valid = re.search(r'valid=(\w+)', resolver.group(1))
+                    ipv6 = re.search(r'ipv6=(on|off)', resolver.group(1))
+                    new_resolver = re.sub(r'valid=(\w+)', '', resolver.group(1))
+                    new_resolver = re.sub(r'ipv6=(on|off)', '', new_resolver)
+
+                    self.resolver = dict(
+                        address=re.findall(r'([^\s]*)', new_resolver),
+                        valid=valid.group(1) if valid else None,
+                        ipv6=ipv6.group(1) if ipv6 else None
+                    )
+                else:
+                    self.resolver = None

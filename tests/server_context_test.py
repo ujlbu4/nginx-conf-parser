@@ -69,6 +69,8 @@ class ServerContextTest(unittest.TestCase):
             read_ahead 14;
             recursive_error_pages on;
             request_pool_size 62k;
+            reset_timedout_connection on;
+            resolver localhost:8080 192.168.1.1 valid=12s ipv6=on;
         }
         """
         self.server = ServerContext(self.context_string.replace('\n', ' '))
@@ -718,6 +720,30 @@ class ServerContextTest(unittest.TestCase):
         self._update_directive('request_pool_size 62k;', '')
         self.assertIsNotNone(self.server.request_pool_size)
         self.assertEqual('4k', self.server.request_pool_size)
+
+    def test_reset_timedout_connection_extraction(self):
+        self.assertIsNotNone(self.server.reset_timedout_connection)
+        self.assertEqual('on', self.server.reset_timedout_connection)
+
+        self._update_directive('reset_timedout_connection on;', 'reset_timedout_connection off;')
+        self.assertEqual('off', self.server.reset_timedout_connection)
+
+        self._update_directive('reset_timedout_connection off;', '')
+        self.assertIsNotNone(self.server.reset_timedout_connection)
+        self.assertEqual('off', self.server.reset_timedout_connection)
+
+    def test_resolver_extraction(self):
+        self.assertIsNotNone(self.server.resolver)
+        self.assertIsInstance(self.server.resolver, dict)
+        self.assertIn('address', self.server.resolver.keys())
+        self.assertIn('valid', self.server.resolver.keys())
+        self.assertIn('ipv6', self.server.resolver.keys())
+
+        self.assertIsInstance(self.server.resolver.get('address'), list)
+        self.assertIn('localhost:8080', self.server.resolver.get('address'))
+        self.assertIn('192.168.1.1', self.server.resolver.get('address'))
+        self.assertEqual('12s', self.server.resolver.get('valid'))
+        self.assertEqual('on', self.server.resolver.get('ipv6'))
 
 
 if __name__ == '__main__':
