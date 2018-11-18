@@ -18,7 +18,7 @@ deploy:
   provider: script
   script: poetry publish
   on:
-    branch: master
+    branch: release
 after_deploy:
   - codecov
 env:
