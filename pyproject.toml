@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "nginx-config-parser"
+version = "0.1.0"
+description = "A python library for parsing Nginx Configuration files"
+license = 'MIT'
+authors = [
+    'Hamza ESSAYEGH <hamza.essayegh@protonmail.com>'
+]
+readme = 'README.md'
+homepage = 'https://github.com/Querdos/nginx-conf-parser'
+repository = 'https://github.com/Querdos/nginx-conf-parser'
+
+[tool.poetry.dependencies]
+python = ">=3.4"
+
+[tool.poetry.dev-dependencies]
+nose = '1.3.7'
+
+[build-system]
+requires = ['poetry>=0.12']
+build-backend = 'poetry.mansonry.api'

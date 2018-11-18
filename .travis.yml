@@ -3,7 +3,12 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
+before_install:
+  - pip install poetry
 install:
-  - pip install -r requirements-dev.txt
+  - poetry install -v
 script:
-  - nosetests lib
+  - nosetests
+before_deploy:
+  - poetry config http-basic.pypi $PYPI_USER $PYPI_PASSWORD
+  - poetry build
