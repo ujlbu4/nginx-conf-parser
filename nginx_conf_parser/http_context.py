@@ -1,7 +1,10 @@
 # coding=utf-8
-from .context import Context
+import re
 
 
-class HttpContext(Context):
-    def _parse(self):
-        super(HttpContext, self)._parse()
+class HttpContext:
+    servers = []
+    absolute_redirect = None
+
+    def __init__(self, content):
+        pass
