@@ -8,7 +8,7 @@ before_install:
 install:
 - poetry install -v
 script:
-- nosetests
+- nosetests --with-coverage
 before_deploy:
 - poetry config http-basic.pypi $PYPI_USER $PYPI_PASSWORD
 - poetry build
@@ -16,8 +16,7 @@ deploy:
   provider: script
   script: poetry publish
   on:
-    tags: true
-    condition: "$TRAVIS_PYTHON_VERSION == 3.6"
+    branch: master
 env:
   global:
   - secure: "sq+GfYaUtQm9yMI/las3op3cQVDdFdWspVwf0+8INMN8/AxeKXxJIJAh6h2u99CocPqcdT9eII+a/HEgl/Io5jBU1shb4+Ccu04ebNZHSHgKjmcX09GDzML3HwXJkCejN0O5NItMRAsGMJ1IdpN3y60BKaTTA3EYGMEyx5Aez8fE1d+lci5JC1OWX4DwEaeOiX991QnConjnvX6alciU7CJNfatkvzeEjBLzGeIYX7IB5qggPJAQiJc1DkgAXRuB+qmyG+MNJDz8bHXM4mZb09pU9glKMIWeCPZ3fnO6BVsCEfAL46hD70eUDbr421t2yPRUwm42EX5i549H5C7DPF7JuqSVGgAB4E8lv1Qm7QyZ1TZ2+pVS8GV7awNze3VtXOmL/dKsvLNGdLuhkW543lSWwcVHoaoIbSK8wgYM81sT7xEO8bLv5EzNLJyvxkgqY3FOM8R6HmcOo7RxQb9UwM+A7qgu1mca/bKZzomCCUokBGxU6KZrxqpbv1sh5L9NfvR4uCXtyyOA8Oe850xupsgk/C7nqbpBIgMRMkzEKFgtb+ErpZQ/EByi+P6uS3ftfFszr8gd4mlqySGF4i8mB+6V0SjfG/K0dsgEVki943y4bQ+R1FO2F8c3+8l6DJ7eiL5l8Eulk2u0Eo9+uujmVzS22rlfqr1GH7ErMRY2jBg="
