@@ -13,6 +13,7 @@ before_deploy:
 - poetry config http-basic.pypi $PYPI_USER $PYPI_PASSWORD
 - poetry build
 deploy:
+  skip_cleanup: true
   provider: script
   script: poetry publish
   on:
