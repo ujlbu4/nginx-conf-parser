@@ -16,6 +16,11 @@ class ServerContextTest(unittest.TestCase):
                 aio off;
                 aio_write off; 
             }
+            types {
+                application/octet-stream bin exe dll;
+                application/octet-stream deb;
+                application/octet-stream dmg;
+            }
             absolute_redirect on;
             aio on;
             aio_write on;
@@ -71,6 +76,22 @@ class ServerContextTest(unittest.TestCase):
             request_pool_size 62k;
             reset_timedout_connection on;
             resolver localhost:8080 192.168.1.1 valid=12s ipv6=on;
+            resolver_timeout 54s;
+            root /var/www/html;
+            satisfy any;
+            send_lowat 14m;
+            send_timeout 54s;
+            sendfile on;
+            sendfile_max_chunk 15m;
+            server_name www.example.com;
+            server_name_in_redirect on;
+            server_tokens build;
+            subrequest_output_buffer_size 9k;
+            tcp_nodelay off;
+            tcp_nopush off;
+            try_files $uri $uri/index.html $uri.html =404;
+            types_hash_bucket_size 14m;
+            types_hash_max_size 512;
         }
         """
         self.server = ServerContext(self.context_string.replace('\n', ' '))
@@ -745,6 +766,180 @@ class ServerContextTest(unittest.TestCase):
         self.assertEqual('12s', self.server.resolver.get('valid'))
         self.assertEqual('on', self.server.resolver.get('ipv6'))
 
+    def test_resolver_timeout_extraction(self):
+        self.assertIsNotNone(self.server.resolver_timeout)
+        self.assertEqual('54s', self.server.resolver_timeout)
+
+        self._update_directive('resolver_timeout 54s;', '')
+        self.assertIsNotNone(self.server.resolver_timeout)
+        self.assertEqual('30s', self.server.resolver_timeout)
+
+    def test_root_extraction(self):
+        self.assertIsNotNone(self.server.root)
+        self.assertEqual('/var/www/html', self.server.root)
+
+        self._update_directive('root /var/www/html;', '')
+        self.assertIsNotNone(self.server.root)
+        self.assertEqual('html', self.server.root)
+
+    def test_satisfy_extraction(self):
+        self.assertIsNotNone(self.server.satisfy)
+        self.assertEqual('any', self.server.satisfy)
+
+        self._update_directive('satisfy any;', 'satisfy all;')
+        self.assertEqual('all', self.server.satisfy)
+
+        self._update_directive('satisfy all;', '')
+        self.assertIsNotNone(self.server.satisfy)
+        self.assertEqual('all', self.server.satisfy)
+
+    def test_send_lowat_extraction(self):
+        self.assertIsNotNone(self.server.send_lowat)
+        self.assertEqual('14m', self.server.send_lowat)
+
+        self._update_directive('send_lowat 14m;', '')
+        self.assertIsNotNone(self.server.send_lowat)
+        self.assertEqual('0', self.server.send_lowat)
+
+    def test_send_timeout_extraction(self):
+        self.assertIsNotNone(self.server.send_timeout)
+        self.assertEqual('54s', self.server.send_timeout)
+
+        self._update_directive('send_timeout 54s;', '')
+        self.assertIsNotNone(self.server.send_timeout)
+        self.assertEqual('60s', self.server.send_timeout)
+
+    def test_sendfile_extraction(self):
+        self.assertIsNotNone(self.server.sendfile)
+        self.assertEqual('on', self.server.sendfile)
+
+        self._update_directive('sendfile on;', 'sendfile off;')
+        self.assertEqual('off', self.server.sendfile)
+
+        self._update_directive('sendfile off;', '')
+        self.assertIsNotNone(self.server.sendfile)
+        self.assertEqual('off', self.server.sendfile)
+
+    def test_sendfile_max_chunk_extraction(self):
+        self.assertIsNotNone(self.server.sendfile_max_chunk)
+        self.assertEqual('15m', self.server.sendfile_max_chunk)
+
+        self._update_directive('sendfile_max_chunk 15m;', '')
+        self.assertIsNotNone(self.server.sendfile_max_chunk)
+        self.assertEqual('0', self.server.sendfile_max_chunk)
+
+    def test_server_name_extraction(self):
+        self.assertIsNotNone(self.server.server_name)
+        self.assertEqual('www.example.com', self.server.server_name)
+
+        self._update_directive('server_name www.example.com;', 'server_name www.example.com example.com;')
+        self.assertIsInstance(self.server.server_name, list)
+        self.assertEqual(2, len(self.server.server_name))
+        self.assertIn('www.example.com', self.server.server_name)
+        self.assertIn('example.com', self.server.server_name)
+
+    def test_server_name_in_redirect_extraction(self):
+        self.assertIsNotNone(self.server.server_name_in_redirect)
+        self.assertEqual('on', self.server.server_name_in_redirect)
+
+        self._update_directive('server_name_in_redirect on;', 'server_name_in_redirect off;')
+        self.assertEqual('off', self.server.server_name_in_redirect)
+
+        self._update_directive('server_name_in_redirect off;', '')
+        self.assertEqual('off', self.server.server_name_in_redirect)
+
+    def test_server_tokens_extraction(self):
+        self.assertIsNotNone(self.server.server_tokens)
+        self.assertEqual('build', self.server.server_tokens)
+
+        self._update_directive('server_tokens build;', 'server_tokens on;')
+        self.assertEqual('on', self.server.server_tokens)
+
+        self._update_directive('server_tokens on;', 'server_tokens off;')
+        self.assertEqual('off', self.server.server_tokens)
+
+        self._update_directive('server_tokens off;', 'server_tokens $variable;')
+        self.assertEqual('$variable', self.server.server_tokens)
+
+        self._update_directive('server_tokens $variable;', '')
+        self.assertEqual('on', self.server.server_tokens)
+
+    def test_subrequest_output_buffer_size_extraction(self):
+        self.assertIsNotNone(self.server.subrequest_output_buffer_size)
+        self.assertEqual('9k', self.server.subrequest_output_buffer_size)
+
+        self._update_directive('subrequest_output_buffer_size 9k;', '')
+        self.assertEqual('4k|8k', self.server.subrequest_output_buffer_size)
+
+    def test_tcp_nodelay_extraction(self):
+        self.assertIsNotNone(self.server.tcp_nodelay)
+        self.assertEqual('off', self.server.tcp_nodelay)
+
+        self._update_directive('tcp_nodelay off;', 'tcp_nodelay on;')
+        self.assertEqual('on', self.server.tcp_nodelay)
+
+        self._update_directive('tcp_nodelay on;', '')
+        self.assertEqual('on', self.server.tcp_nodelay)
+
+    def test_tcp_nopush_extraction(self):
+        self.assertIsNotNone(self.server.tcp_nopush)
+        self.assertEqual('off', self.server.tcp_nopush)
+
+        self._update_directive('tcp_nopush off;', 'tcp_nopush on;')
+        self.assertEqual('on', self.server.tcp_nopush)
+
+        self._update_directive('tcp_nopush on;', '')
+        self.assertIsNotNone(self.server.tcp_nopush)
+        self.assertEqual('off', self.server.tcp_nopush)
+
+    def test_try_files_extraction(self):
+        self.assertIsNotNone(self.server.try_files)
+        self.assertIsInstance(self.server.try_files, list)
+        self.assertEqual(4, len(self.server.try_files), self.server.try_files)
+        self.assertEqual('$uri $uri/index.html $uri.html =404'.split(' '), self.server.try_files)
+
+        self._update_directive('try_files $uri $uri/index.html $uri.html =404;', 'try_files /home/user/index.html;')
+        self.assertIsInstance(self.server.try_files, str)
+        self.assertEqual('/home/user/index.html', self.server.try_files)
+
+        self._update_directive('try_files /home/user/index.html;', '')
+        self.assertIsNone(self.server.try_files)
+
+    def test_types_extraction(self):
+        self.assertIsNotNone(self.server.types)
+        self.assertIsInstance(self.server.types, dict)
+        self.assertEqual(5, len(self.server.types.keys()))
+        self.assertEqual(['bin', 'exe', 'dll', 'deb', 'dmg'], list(self.server.types.keys()))
+        for _ in ['bin', 'exe', 'dll', 'deb', 'dmg']:
+            self.assertEqual('application/octet-stream', self.server.types[_])
+
+    def test_types_hash_bucket_size_extraction(self):
+        self.assertIsNotNone(self.server.types_hash_bucket_size)
+        self.assertEqual('14m', self.server.types_hash_bucket_size)
+
+        self._update_directive('types_hash_bucket_size 14m;', '')
+        self.assertIsNotNone(self.server.types_hash_bucket_size)
+        self.assertEqual('64', self.server.types_hash_bucket_size)
+
+    def test_types_hash_max_size_extraction(self):
+        self.assertIsNotNone(self.server.types_hash_max_size)
+        self.assertEqual('512', self.server.types_hash_max_size)
+
+        self._update_directive('types_hash_max_size 512;', '')
+        self.assertIsNotNone(self.server.types_hash_max_size)
+        self.assertEqual('1024', self.server.types_hash_max_size)
+
+    @unittest.skip('TBD')
+    def test_underscores_in_headers_extraction(self):
+        pass
+
+    @unittest.skip('TBD')
+    def test_variables_hash_bucket_size_extraction(self):
+        pass
+
+    @unittest.skip('TBD')
+    def test_variables_hash_max_size_extraction(self):
+        pass
 
 if __name__ == '__main__':
     unittest.main()
