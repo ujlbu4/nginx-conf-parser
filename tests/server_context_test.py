@@ -909,7 +909,7 @@ class ServerContextTest(unittest.TestCase):
         self.assertIsNotNone(self.server.types)
         self.assertIsInstance(self.server.types, dict)
         self.assertEqual(5, len(self.server.types.keys()))
-        self.assertEqual(['bin', 'exe', 'dll', 'deb', 'dmg'], list(self.server.types.keys()))
+        self.assertEqual({'bin', 'exe', 'dll', 'deb', 'dmg'}, set(self.server.types.keys()))
         for _ in ['bin', 'exe', 'dll', 'deb', 'dmg']:
             self.assertEqual('application/octet-stream', self.server.types[_])
 
