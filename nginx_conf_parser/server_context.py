@@ -288,194 +288,194 @@ class ServerContext:
                         listen) == 2 and 'so_keepalive' in listen[1] else None
                 ))
 
-                # log_not_found directive
-                log_not_found = re.search(r'log_not_found\s+(on|off);', self._content)
-                self.log_not_found = log_not_found.group(1) if log_not_found else 'on'
+        # log_not_found directive
+        log_not_found = re.search(r'log_not_found\s+(on|off);', self._content)
+        self.log_not_found = log_not_found.group(1) if log_not_found else 'on'
 
-                # log_subrequest directive
-                log_subrequest = re.search(r'log_subrequest\s+(on|off);', self._content)
-                self.log_subrequest = log_subrequest.group(1) if log_subrequest else 'off'
+        # log_subrequest directive
+        log_subrequest = re.search(r'log_subrequest\s+(on|off);', self._content)
+        self.log_subrequest = log_subrequest.group(1) if log_subrequest else 'off'
 
-                # max_ranges directive
-                max_ranges = re.search(r'max_ranges\s+(\d+);', self._content)
-                self.max_ranges = int(max_ranges.group(1)) if max_ranges else None
+        # max_ranges directive
+        max_ranges = re.search(r'max_ranges\s+(\d+);', self._content)
+        self.max_ranges = int(max_ranges.group(1)) if max_ranges else None
 
-                # merge_slashes directive
-                merge_slashes = re.search(r'merge_slashes\s+(on|off);', self._content)
-                self.merge_slashes = merge_slashes.group(1) if merge_slashes else 'on'
+        # merge_slashes directive
+        merge_slashes = re.search(r'merge_slashes\s+(on|off);', self._content)
+        self.merge_slashes = merge_slashes.group(1) if merge_slashes else 'on'
 
-                # msie_padding directive
-                msie_padding = re.search(r'msie_padding\s+(on|off);', self._content)
-                self.msie_padding = msie_padding.group(1) if msie_padding else 'on'
+        # msie_padding directive
+        msie_padding = re.search(r'msie_padding\s+(on|off);', self._content)
+        self.msie_padding = msie_padding.group(1) if msie_padding else 'on'
 
-                # msie_refresh directive
-                msie_refresh = re.search(r'msie_refresh\s+(on|off);', self._content)
-                self.msie_refresh = msie_refresh.group(1) if msie_refresh else 'off'
+        # msie_refresh directive
+        msie_refresh = re.search(r'msie_refresh\s+(on|off);', self._content)
+        self.msie_refresh = msie_refresh.group(1) if msie_refresh else 'off'
 
-                # open_file_cache directive
-                open_file_cache = re.search(r'open_file_cache\s+(off|max=(\d+)\s*(inactive=(\w+))?)', self._content)
-                if open_file_cache:
-                    if open_file_cache.group(2):
-                        self.open_file_cache = dict(
-                            max=int(open_file_cache.group(2)),
-                            inactive=open_file_cache.group(4) if open_file_cache.group(4) else None
-                        )
-                    else:
-                        self.open_file_cache = 'off'
-                else:
-                    self.open_file_cache = 'off'
-
-                # open_file_cache_errors directive
-                open_file_cache_errors = re.search(r'open_file_cache_errors\s+(on|off);', self._content)
-                self.open_file_cache_errors = open_file_cache_errors.group(1) if open_file_cache_errors else 'off'
-
-                # open_file_cache_min_uses directive
-                open_file_cache_min_uses = re.search(r'open_file_cache_min_uses\s+(\d+);', self._content)
-                self.open_file_cache_min_uses = int(
-                    open_file_cache_min_uses.group(1)) if open_file_cache_min_uses else 1
-
-                # open_file_cache_valid directive
-                open_file_cache_valid = re.search(r'open_file_cache_valid\s+([^;]*)', self._content)
-                self.open_file_cache_valid = open_file_cache_valid.group(1) if open_file_cache_valid else '60s'
-
-                # output_buffers directive
-                output_buffers = re.search(r'output_buffers\s+(\d+)\s+([^;]*)', self._content)
-                self.output_buffers = dict(
-                    number=int(output_buffers.group(1)),
-                    size=output_buffers.group(2)
-                ) if output_buffers else dict(
-                    number=2,
-                    size='32k'
+        # open_file_cache directive
+        open_file_cache = re.search(r'open_file_cache\s+(off|max=(\d+)\s*(inactive=(\w+))?)', self._content)
+        if open_file_cache:
+            if open_file_cache.group(2):
+                self.open_file_cache = dict(
+                    max=int(open_file_cache.group(2)),
+                    inactive=open_file_cache.group(4) if open_file_cache.group(4) else None
                 )
+            else:
+                self.open_file_cache = 'off'
+        else:
+            self.open_file_cache = 'off'
 
-                # port_in_redirect directive
-                port_in_redirect = re.search(r'port_in_redirect\s+(on|off);', self._content)
-                self.port_in_redirect = port_in_redirect.group(1) if port_in_redirect else 'on'
+        # open_file_cache_errors directive
+        open_file_cache_errors = re.search(r'open_file_cache_errors\s+(on|off);', self._content)
+        self.open_file_cache_errors = open_file_cache_errors.group(1) if open_file_cache_errors else 'off'
 
-                # postpone_output directive
-                postpone_output = re.search(r'postpone_output\s+([^;]*)', self._content)
-                self.postpone_output = postpone_output.group(1) if postpone_output else '1460'
+        # open_file_cache_min_uses directive
+        open_file_cache_min_uses = re.search(r'open_file_cache_min_uses\s+(\d+);', self._content)
+        self.open_file_cache_min_uses = int(
+            open_file_cache_min_uses.group(1)) if open_file_cache_min_uses else 1
 
-                # read_ahead directive
-                read_ahead = re.search(r'read_ahead\s+([^;]*)', self._content)
-                self.read_ahead = read_ahead.group(1) if read_ahead else '0'
+        # open_file_cache_valid directive
+        open_file_cache_valid = re.search(r'open_file_cache_valid\s+([^;]*)', self._content)
+        self.open_file_cache_valid = open_file_cache_valid.group(1) if open_file_cache_valid else '60s'
 
-                # recursive_error_pages directive
-                recursive_error_pages = re.search(r'recursive_error_pages\s+(on|off);', self._content)
-                self.recursive_error_pages = recursive_error_pages.group(1) if recursive_error_pages else 'off'
+        # output_buffers directive
+        output_buffers = re.search(r'output_buffers\s+(\d+)\s+([^;]*)', self._content)
+        self.output_buffers = dict(
+            number=int(output_buffers.group(1)),
+            size=output_buffers.group(2)
+        ) if output_buffers else dict(
+            number=2,
+            size='32k'
+        )
 
-                # request_pool_size directive
-                request_pool_size = re.search(r'request_pool_size\s+([^;]*)', self._content)
-                self.request_pool_size = request_pool_size.group(1) if request_pool_size else '4k'
+        # port_in_redirect directive
+        port_in_redirect = re.search(r'port_in_redirect\s+(on|off);', self._content)
+        self.port_in_redirect = port_in_redirect.group(1) if port_in_redirect else 'on'
 
-                # reset_timedout_connection directive
-                reset_timedout_connection = re.search(r'reset_timedout_connection\s+(on|off);', self._content)
-                self.reset_timedout_connection = reset_timedout_connection.group(
-                    1) if reset_timedout_connection else 'off'
+        # postpone_output directive
+        postpone_output = re.search(r'postpone_output\s+([^;]*)', self._content)
+        self.postpone_output = postpone_output.group(1) if postpone_output else '1460'
 
-                # resolver directive
-                resolver = re.search(r'resolver\s+([^;]*)', self._content)
-                if resolver:
-                    valid = re.search(r'valid=(\w+)', resolver.group(1))
-                    ipv6 = re.search(r'ipv6=(on|off)', resolver.group(1))
-                    new_resolver = re.sub(r'valid=(\w+)', '', resolver.group(1))
-                    new_resolver = re.sub(r'ipv6=(on|off)', '', new_resolver)
+        # read_ahead directive
+        read_ahead = re.search(r'read_ahead\s+([^;]*)', self._content)
+        self.read_ahead = read_ahead.group(1) if read_ahead else '0'
 
-                    self.resolver = dict(
-                        address=re.findall(r'([^\s]*)', new_resolver),
-                        valid=valid.group(1) if valid else None,
-                        ipv6=ipv6.group(1) if ipv6 else None
-                    )
-                else:
-                    self.resolver = None
+        # recursive_error_pages directive
+        recursive_error_pages = re.search(r'recursive_error_pages\s+(on|off);', self._content)
+        self.recursive_error_pages = recursive_error_pages.group(1) if recursive_error_pages else 'off'
 
-                # resolver_timeout directive
-                resolver_timeout = re.search(r'resolver_timeout\s+([^;]*)', self._content)
-                self.resolver_timeout = resolver_timeout.group(1) if resolver_timeout else '30s'
+        # request_pool_size directive
+        request_pool_size = re.search(r'request_pool_size\s+([^;]*)', self._content)
+        self.request_pool_size = request_pool_size.group(1) if request_pool_size else '4k'
 
-                # root directive
-                root = re.search(r'root\s+([^;]*)', self._content)
-                self.root = root.group(1) if root else 'html'
+        # reset_timedout_connection directive
+        reset_timedout_connection = re.search(r'reset_timedout_connection\s+(on|off);', self._content)
+        self.reset_timedout_connection = reset_timedout_connection.group(
+            1) if reset_timedout_connection else 'off'
 
-                # satisfy directive
-                satisfy = re.search(r'satisfy\s+(all|any);', self._content)
-                self.satisfy = satisfy.group(1) if satisfy else 'all'
+        # resolver directive
+        resolver = re.search(r'resolver\s+([^;]*)', self._content)
+        if resolver:
+            valid = re.search(r'valid=(\w+)', resolver.group(1))
+            ipv6 = re.search(r'ipv6=(on|off)', resolver.group(1))
+            new_resolver = re.sub(r'valid=(\w+)', '', resolver.group(1))
+            new_resolver = re.sub(r'ipv6=(on|off)', '', new_resolver)
 
-                # send_lowat directive
-                send_lowat = re.search(r'send_lowat\s+([^;]*)', self._content)
-                self.send_lowat = send_lowat.group(1) if send_lowat else '0'
+            self.resolver = dict(
+                address=re.findall(r'([^\s]*)', new_resolver),
+                valid=valid.group(1) if valid else None,
+                ipv6=ipv6.group(1) if ipv6 else None
+            )
+        else:
+            self.resolver = None
 
-                # send_timeout directive
-                send_timeout = re.search(r'send_timeout\s+([^;]*)', self._content)
-                self.send_timeout = send_timeout.group(1) if send_timeout else '60s'
+        # resolver_timeout directive
+        resolver_timeout = re.search(r'resolver_timeout\s+([^;]*)', self._content)
+        self.resolver_timeout = resolver_timeout.group(1) if resolver_timeout else '30s'
 
-                # sendfile directive
-                sendfile = re.search(r'sendfile\s+(on|off);', self._content)
-                self.sendfile = sendfile.group(1) if sendfile else 'off'
+        # root directive
+        root = re.search(r'root\s+([^;]*)', self._content)
+        self.root = root.group(1) if root else 'html'
 
-                # sendfile_max_chunk directive
-                sendfile_max_chunk = re.search(r'sendfile_max_chunk\s+([^;]*)', self._content)
-                self.sendfile_max_chunk = sendfile_max_chunk.group(1) if sendfile_max_chunk else '0'
+        # satisfy directive
+        satisfy = re.search(r'satisfy\s+(all|any);', self._content)
+        self.satisfy = satisfy.group(1) if satisfy else 'all'
 
-                # server_name directive
-                server_name = re.search(r'server_name\s+([^;]*)', self._content)
-                self.server_name = re.findall(r'([^\s]+)', server_name.group(1)) if server_name else ''
-                self.server_name = self.server_name[0] if len(self.server_name) == 1 else self.server_name
+        # send_lowat directive
+        send_lowat = re.search(r'send_lowat\s+([^;]*)', self._content)
+        self.send_lowat = send_lowat.group(1) if send_lowat else '0'
 
-                # server_name_in_redirect directive
-                server_name_in_redirect = re.search(r'server_name_in_redirect\s+(on|off);', self._content)
-                self.server_name_in_redirect = server_name_in_redirect.group(1) if server_name_in_redirect else 'off'
+        # send_timeout directive
+        send_timeout = re.search(r'send_timeout\s+([^;]*)', self._content)
+        self.send_timeout = send_timeout.group(1) if send_timeout else '60s'
 
-                # server_tokens directive
-                server_tokens = re.search(r'server_tokens\s+(on|off|build|[^;]*)', self._content)
-                self.server_tokens = server_tokens.group(1) if server_tokens else 'on'
+        # sendfile directive
+        sendfile = re.search(r'sendfile\s+(on|off);', self._content)
+        self.sendfile = sendfile.group(1) if sendfile else 'off'
 
-                # subrequest_output_buffer_size directive
-                subrequest_output_buffer_size = re.search(r'subrequest_output_buffer_size\s+([^;]*)', self._content)
-                self.subrequest_output_buffer_size = subrequest_output_buffer_size.group(
-                    1) if subrequest_output_buffer_size else '4k|8k'
+        # sendfile_max_chunk directive
+        sendfile_max_chunk = re.search(r'sendfile_max_chunk\s+([^;]*)', self._content)
+        self.sendfile_max_chunk = sendfile_max_chunk.group(1) if sendfile_max_chunk else '0'
 
-                # tcp_nodelay directive
-                tcp_nodelay = re.search(r'tcp_nodelay\s+(on|off);', self._content)
-                self.tcp_nodelay = tcp_nodelay.group(1) if tcp_nodelay else 'on'
+        # server_name directive
+        server_name = re.search(r'server_name\s+([^;]*)', self._content)
+        self.server_name = re.findall(r'([^\s]+)', server_name.group(1)) if server_name else ''
+        self.server_name = self.server_name[0] if len(self.server_name) == 1 else self.server_name
 
-                # tcp_nopush directive
-                tcp_nopush = re.search(r'tcp_nopush\s+(on|off);', self._content)
-                self.tcp_nopush = tcp_nopush.group(1) if tcp_nopush else 'off'
+        # server_name_in_redirect directive
+        server_name_in_redirect = re.search(r'server_name_in_redirect\s+(on|off);', self._content)
+        self.server_name_in_redirect = server_name_in_redirect.group(1) if server_name_in_redirect else 'off'
 
-                # try_files directive
-                try_files = re.search(r'try_files\s+([^;]*)', self._content)
-                if try_files:
-                    self.try_files = re.findall(r'([^\s]+)', try_files.group(1)) if try_files else None
-                    self.try_files = self.try_files[0] if len(self.try_files) == 1 else self.try_files
+        # server_tokens directive
+        server_tokens = re.search(r'server_tokens\s+(on|off|build|[^;]*)', self._content)
+        self.server_tokens = server_tokens.group(1) if server_tokens else 'on'
 
-                # types directive
-                types = re.search(r'types\s+{([^}]*)', self._content)
-                if types:
-                    self.types = dict()
-                    subdirectives = [_.strip() for _ in re.findall(r'([^;]+)', types.group(1)) if _.strip()]
-                    for subdirective in subdirectives:
-                        _ = re.findall(r'([^\s]+)', subdirective)
-                        for extension in _[1:]:
-                            self.types[extension] = _[0]
+        # subrequest_output_buffer_size directive
+        subrequest_output_buffer_size = re.search(r'subrequest_output_buffer_size\s+([^;]*)', self._content)
+        self.subrequest_output_buffer_size = subrequest_output_buffer_size.group(
+            1) if subrequest_output_buffer_size else '4k|8k'
 
-                # types_hash_bucket_size directive
-                types_hash_bucket_size = re.search(r'types_hash_bucket_size\s+([^;]*)', self._content)
-                self.types_hash_bucket_size = types_hash_bucket_size.group(1) if types_hash_bucket_size else '64'
+        # tcp_nodelay directive
+        tcp_nodelay = re.search(r'tcp_nodelay\s+(on|off);', self._content)
+        self.tcp_nodelay = tcp_nodelay.group(1) if tcp_nodelay else 'on'
 
-                # types_hash_max_size directive
-                types_hash_max_size = re.search(r'types_hash_max_size\s+([^;]*)', self._content)
-                self.types_hash_max_size = types_hash_max_size.group(1) if types_hash_max_size else '1024'
+        # tcp_nopush directive
+        tcp_nopush = re.search(r'tcp_nopush\s+(on|off);', self._content)
+        self.tcp_nopush = tcp_nopush.group(1) if tcp_nopush else 'off'
 
-                # underscores_in_headers directive
-                underscores_in_headers = re.search(r'underscores_in_headers\s+(on|off);', self._content)
-                self.underscores_in_headers = underscores_in_headers.group(1) if underscores_in_headers else 'off'
+        # try_files directive
+        try_files = re.search(r'try_files\s+([^;]*)', self._content)
+        if try_files:
+            self.try_files = re.findall(r'([^\s]+)', try_files.group(1)) if try_files else None
+            self.try_files = self.try_files[0] if len(self.try_files) == 1 else self.try_files
 
-                # variables_hash_bucket_size directive
-                variables_hash_bucket_size = re.search(r'variables_hash_bucket_size\s+([^;]*)', self._content)
-                self.variables_hash_bucket_size = variables_hash_bucket_size.group(
-                    1) if variables_hash_bucket_size else '64'
+        # types directive
+        types = re.search(r'types\s+{([^}]*)', self._content)
+        if types:
+            self.types = dict()
+            subdirectives = [_.strip() for _ in re.findall(r'([^;]+)', types.group(1)) if _.strip()]
+            for subdirective in subdirectives:
+                _ = re.findall(r'([^\s]+)', subdirective)
+                for extension in _[1:]:
+                    self.types[extension] = _[0]
 
-                # variables_hash_max_size directive
-                variables_hash_max_size = re.search(r'variables_hash_max_size\s+([^;]*)', self._content)
-                self.variables_hash_max_size = variables_hash_max_size.group(1) if variables_hash_max_size else '1024'
+        # types_hash_bucket_size directive
+        types_hash_bucket_size = re.search(r'types_hash_bucket_size\s+([^;]*)', self._content)
+        self.types_hash_bucket_size = types_hash_bucket_size.group(1) if types_hash_bucket_size else '64'
+
+        # types_hash_max_size directive
+        types_hash_max_size = re.search(r'types_hash_max_size\s+([^;]*)', self._content)
+        self.types_hash_max_size = types_hash_max_size.group(1) if types_hash_max_size else '1024'
+
+        # underscores_in_headers directive
+        underscores_in_headers = re.search(r'underscores_in_headers\s+(on|off);', self._content)
+        self.underscores_in_headers = underscores_in_headers.group(1) if underscores_in_headers else 'off'
+
+        # variables_hash_bucket_size directive
+        variables_hash_bucket_size = re.search(r'variables_hash_bucket_size\s+([^;]*)', self._content)
+        self.variables_hash_bucket_size = variables_hash_bucket_size.group(
+            1) if variables_hash_bucket_size else '64'
+
+        # variables_hash_max_size directive
+        variables_hash_max_size = re.search(r'variables_hash_max_size\s+([^;]*)', self._content)
+        self.variables_hash_max_size = variables_hash_max_size.group(1) if variables_hash_max_size else '1024'
