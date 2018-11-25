@@ -60,18 +60,16 @@ class ServerContext:
     send_timeout = None
     sendfile = None
     sendfile_max_chunk = None
+    server_name = None
     server_name_in_redirect = None
     server_tokens = None
     subrequest_output_buffer_size = None
     tcp_nodelay = None
     tcp_nopush = None
-    try_files = None
     types = None
     types_hash_bucket_size = None
     types_hash_max_size = None
     underscores_in_headers = None
-    variables_hash_bucket_size = None
-    variables_hash_max_size = None
 
     def __init__(self, content):
         # extracting location directive
@@ -86,7 +84,7 @@ class ServerContext:
         self.absolute_redirect = abs_redirect.group(1) if abs_redirect else 'off'
 
         # aio directive
-        aio = re.search(r'aio\s+(on|off|threads=?(.*)?);', self._content)
+        aio = re.search(r'aio\s+(on|off|threads=?([^;]*)?);', self._content)
         self.aio = 'off'
         if aio:
             if aio.group(1) == 'on' or aio.group(1) == 'off':
@@ -443,12 +441,6 @@ class ServerContext:
         tcp_nopush = re.search(r'tcp_nopush\s+(on|off);', self._content)
         self.tcp_nopush = tcp_nopush.group(1) if tcp_nopush else 'off'
 
-        # try_files directive
-        try_files = re.search(r'try_files\s+([^;]*)', self._content)
-        if try_files:
-            self.try_files = re.findall(r'([^\s]+)', try_files.group(1)) if try_files else None
-            self.try_files = self.try_files[0] if len(self.try_files) == 1 else self.try_files
-
         # types directive
         types = re.search(r'types\s+{([^}]*)', self._content)
         if types:
@@ -470,12 +462,3 @@ class ServerContext:
         # underscores_in_headers directive
         underscores_in_headers = re.search(r'underscores_in_headers\s+(on|off);', self._content)
         self.underscores_in_headers = underscores_in_headers.group(1) if underscores_in_headers else 'off'
-
-        # variables_hash_bucket_size directive
-        variables_hash_bucket_size = re.search(r'variables_hash_bucket_size\s+([^;]*)', self._content)
-        self.variables_hash_bucket_size = variables_hash_bucket_size.group(
-            1) if variables_hash_bucket_size else '64'
-
-        # variables_hash_max_size directive
-        variables_hash_max_size = re.search(r'variables_hash_max_size\s+([^;]*)', self._content)
-        self.variables_hash_max_size = variables_hash_max_size.group(1) if variables_hash_max_size else '1024'
