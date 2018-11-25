@@ -15,6 +15,8 @@ class HttpContext:
     auth_jwt = None
     auth_jwt_claim_set = None
     auth_jwt_header_set = None
+    auth_jwt_key_file = None
+    auth_jwt_leeway = None
     chunked_transfer_encoding = None
     client_body_buffer_size = None
     client_body_in_file_only = None
@@ -144,6 +146,14 @@ class HttpContext:
                     variable=reg[0][0],
                     names=[_[0] if len(_[0]) != 0 else _[1] for _ in reg[1:]]
                 ))
+
+        # auth_jwt_key_file directive
+        auth_jwt_key_file = re.search(r'auth_jwt_key_file\s+([^;]*)', self._content)
+        self.auth_jwt_key_file = auth_jwt_key_file.group(1) if auth_jwt_key_file else None
+
+        # auth_jwt_leeway directive
+        auth_jwt_leeway = re.search(r'auth_jwt_leeway\s+([^;]*)', self._content)
+        self.auth_jwt_leeway = auth_jwt_leeway.group(1) if auth_jwt_leeway else '0s'
 
         # chunked_transfer_encoding directive
         cte = re.search(r'chunked_transfer_encoding\s+(on|off);', self._content)

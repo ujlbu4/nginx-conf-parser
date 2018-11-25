@@ -15,6 +15,7 @@ class LimitExceptContextTest(unittest.TestCase):
             deny  all;
             
             auth_jwt "closed site" token=$cookie_auth_token;
+            auth_jwt_key_file conf/keys.json;
         }
         """
         self.limit_except = LimitExceptContext(self.context_string.replace('\n', ' '))
@@ -54,6 +55,13 @@ class LimitExceptContextTest(unittest.TestCase):
         self._update_directive('auth_jwt off;', '')
         self.assertIsInstance(self.limit_except.auth_jwt, str)
         self.assertEqual('off', self.limit_except.auth_jwt)
+
+    def test_auth_jwt_key_file_extraction(self):
+        self.assertIsNotNone(self.limit_except.auth_jwt_key_file)
+        self.assertEqual('conf/keys.json', self.limit_except.auth_jwt_key_file)
+
+        self._update_directive('auth_jwt_key_file conf/keys.json;', '')
+        self.assertIsNone(self.limit_except.auth_jwt_key_file)
 
 
 if __name__ == '__main__':

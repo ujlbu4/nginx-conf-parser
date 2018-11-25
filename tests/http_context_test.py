@@ -52,6 +52,8 @@ class HttpContextTest(unittest.TestCase):
             auth_jwt_claim_set $job info "job title";
             auth_jwt_header_set $variable1 name1 "name 2";
             auth_jwt_header_set $variable2 name3 "name 4";
+            auth_jwt_key_file conf/keys.json;
+            auth_jwt_leeway 50s;
             chunked_transfer_encoding off;
             client_body_buffer_size 82k;
             client_body_in_file_only clean;
@@ -222,6 +224,21 @@ class HttpContextTest(unittest.TestCase):
         self._update_directive('auth_jwt_header_set $variable1 name1 "name 2";', '')
         self._update_directive('auth_jwt_header_set $variable2 name3 "name 4";', '')
         self.assertIsNone(self.http.auth_jwt_header_set)
+
+    def test_auth_jwt_key_file_extraction(self):
+        self.assertIsNotNone(self.http.auth_jwt_key_file)
+        self.assertEqual('conf/keys.json', self.http.auth_jwt_key_file)
+
+        self._update_directive('auth_jwt_key_file conf/keys.json;', '')
+        self.assertIsNone(self.http.auth_jwt_key_file)
+
+    def test_auth_jwt_leeway_extraction(self):
+        self.assertIsNotNone(self.http.auth_jwt_leeway)
+        self.assertEqual('50s', self.http.auth_jwt_leeway)
+
+        self._update_directive('auth_jwt_leeway 50s;', '')
+        self.assertIsNotNone(self.http.auth_jwt_leeway)
+        self.assertEqual('0s', self.http.auth_jwt_leeway)
 
     def test_chunked_transfer_encoding_extraction(self):
         self.assertIsNotNone(self.http.chunked_transfer_encoding)

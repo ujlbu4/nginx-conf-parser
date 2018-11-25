@@ -33,6 +33,8 @@ class ServerContextTest(unittest.TestCase):
             aio on;
             aio_write on;
             auth_jwt "closed site" token=$cookie_auth_token;
+            auth_jwt_key_file conf/keys.json;
+            auth_jwt_leeway 50s;
             chunked_transfer_encoding off;
             client_body_buffer_size 82k;
             client_body_in_file_only clean;
@@ -185,6 +187,21 @@ class ServerContextTest(unittest.TestCase):
         self._update_directive('auth_jwt off;', '')
         self.assertIsInstance(self.server.auth_jwt, str)
         self.assertEqual('off', self.server.auth_jwt)
+
+    def test_auth_jwt_key_file_extraction(self):
+        self.assertIsNotNone(self.server.auth_jwt_key_file)
+        self.assertEqual('conf/keys.json', self.server.auth_jwt_key_file)
+
+        self._update_directive('auth_jwt_key_file conf/keys.json;', '')
+        self.assertIsNone(self.server.auth_jwt_key_file)
+
+    def test_auth_jwt_leeway_extraction(self):
+        self.assertIsNotNone(self.server.auth_jwt_leeway)
+        self.assertEqual('50s', self.server.auth_jwt_leeway)
+
+        self._update_directive('auth_jwt_leeway 50s;', '')
+        self.assertIsNotNone(self.server.auth_jwt_leeway)
+        self.assertEqual('0s', self.server.auth_jwt_leeway)
 
     def test_chunked_transfer_encoding_extraction(self):
         self.assertIsNotNone(self.server.chunked_transfer_encoding)

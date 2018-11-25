@@ -6,6 +6,7 @@ class LimitExceptContext:
     allow = None
     deny = None
     auth_jwt = None
+    auth_jwt_key_file = None
 
     def __init__(self, content):
         self._content = content
@@ -28,3 +29,7 @@ class LimitExceptContext:
                 realm='"{0}"'.format(_.group(1)),
                 token=_.group(3) if _.group(3) else None
             )
+
+        # auth_jwt_key_file directive
+        auth_jwt_key_file = re.search(r'auth_jwt_key_file\s+([^;]*)', self._content)
+        self.auth_jwt_key_file = auth_jwt_key_file.group(1) if auth_jwt_key_file else None
