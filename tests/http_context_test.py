@@ -1,12 +1,27 @@
 # coding=utf-8
 import unittest
+
 from nginx_conf_parser.http_context import HttpContext
+from nginx_conf_parser.upstream_context import UpstreamContext
 
 
 class HttpContextTest(unittest.TestCase):
     def setUp(self):
         self.context_string = """
         http {
+            upstream u {
+                zone upstream_dynamic 64k;
+                state /var/lib/nginx/state/servers.conf; # path for Linux
+                hash $remote_addr consistent;
+            }
+            
+            upstream u1 {
+                keepalive 32;
+                keepalive_requests 100;
+                keepalive_timeout 60s;
+                least_conn;
+            }
+        
             server {
                 absolute_redirect on;
                 location = /test {
@@ -125,6 +140,17 @@ class HttpContextTest(unittest.TestCase):
     def _update_directive(self, initial, new):
         self.context_string = self.context_string.replace(initial, new)
         self.http = HttpContext(self.context_string)
+
+    def test_upstreams_extraction(self):
+        self.assertIsNotNone(self.http.upstreams)
+        self.assertIsInstance(self.http.upstreams, list)
+        self.assertEqual(2, len(self.http.upstreams))
+
+        for upstream in self.http.upstreams:
+            self.assertIsInstance(upstream, UpstreamContext)
+
+        self.assertIn('u', [_.name for _ in self.http.upstreams])
+        self.assertIn('u1', [_.name for _ in self.http.upstreams])
 
     def test_absolute_redirect_extraction(self):
         self.assertIsNotNone(self.http.absolute_redirect)

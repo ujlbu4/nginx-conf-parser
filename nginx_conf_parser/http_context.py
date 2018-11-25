@@ -2,12 +2,14 @@
 import re
 
 from .server_context import ServerContext
+from .upstream_context import UpstreamContext
 from .utils import extract_context
 
 
 class HttpContext:
     """Extract http context from the given string"""
     servers = []
+    upstreams = None
     absolute_redirect = None
     accept = None
     aio = None
@@ -86,6 +88,13 @@ class HttpContext:
 
     def __init__(self, content):
         self._content = content.replace('\n', ' ')
+
+        # extracting upstream
+        upstreams = re.findall(r'upstream\s+([^{]*){([^}]*)', self._content)
+        self.upstreams = []
+        for upstream in upstreams:
+            self.upstreams.append(UpstreamContext(upstream[0].strip(), upstream[1]))
+        self._content = re.sub('upstream\s+[^{]*{[^}]*}', '', self._content)
 
         # extracting servers
         while extract_context(self._content, 'server') != '':
