@@ -1,26 +1,20 @@
 # coding=utf-8
 import re
-
-from .server_context import ServerContext
 from .utils import extract_context
 
 
-class HttpContext:
-    """Extract http context from the given string"""
-    servers = []
+class LocationContext:
     absolute_redirect = None
     aio = None
     aio_write = None
+    alias = None
     chunked_transfer_encoding = None
     client_body_buffer_size = None
     client_body_in_file_only = None
     client_body_in_single_buffer = None
     client_body_temp_path = None
     client_body_timeout = None
-    client_header_buffer_size = None
-    client_header_timeout = None
     client_max_body_size = None
-    connection_pool_size = None
     default_type = None
     directio = None
     directio_alignment = None
@@ -28,11 +22,11 @@ class HttpContext:
     error_page = None
     etag = None
     if_modified_since = None
-    ignore_invalid_headers = None
+    internal = False
     keepalive_disable = None
     keepalive_requests = None
     keepalive_timeout = None
-    large_client_header_buffers = None
+    limit_except = None
     limit_rate = None
     limit_rate_after = None
     lingering_close = None
@@ -41,7 +35,6 @@ class HttpContext:
     log_not_found = None
     log_subrequest = None
     max_ranges = None
-    merge_slashes = None
     msie_padding = None
     msie_refresh = None
     open_file_cache = None
@@ -53,7 +46,6 @@ class HttpContext:
     postpone_output = None
     read_ahead = None
     recursive_error_pages = None
-    request_pool_size = None
     reset_timedout_connection = None
     resolver = None
     resolver_timeout = None
@@ -64,34 +56,32 @@ class HttpContext:
     sendfile = None
     sendfile_max_chunk = None
     server_name_in_redirect = None
-    server_names_hash_bucket_size = None
-    server_names_hash_max_size = None
     server_tokens = None
     subrequest_output_buffer_size = None
     tcp_nodelay = None
     tcp_nopush = None
+    try_files = None
     types = None
     types_hash_bucket_size = None
     types_hash_max_size = None
-    underscores_in_headers = None
-    variables_hash_bucket_size = None
-    variables_hash_max_size = None
 
     def __init__(self, content):
         self._content = content.replace('\n', ' ')
 
-        # extracting servers
-        while extract_context(self._content, 'server') != '':
-            server = extract_context(self._content, 'server')
-            self.servers.append(ServerContext(server))
-            self._content = self._content.replace(server, '')
+        # limit_except directive
+        limit_except = re.findall(r'limit_except\s+([^{]*)\s*{([^}]*)', self._content)
+        if limit_except:
+            self.limit_except = dict()
+            for _ in limit_except:
+                # TODO: convert directly with limit_except_context
+                self.limit_except[_[0].strip()] = _[1].strip()
 
         # absolute_redirect directive
         abs_redirect = re.search(r'absolute_redirect\s+(on|off);', self._content)
         self.absolute_redirect = abs_redirect.group(1) if abs_redirect else 'off'
 
         # aio directive
-        aio = re.search(r'aio\s+(on|off|threads=?([^;]*)?)', self._content)
+        aio = re.search(r'aio\s+(on|off|threads=?([^;]*)?);', self._content)
         self.aio = 'off'
         if aio:
             if aio.group(1) == 'on' or aio.group(1) == 'off':
@@ -102,6 +92,10 @@ class HttpContext:
         # aio_write directive
         awrite = re.search(r'aio_write\s+(on|off);', self._content)
         self.aio_write = awrite.group(1) if awrite else 'off'
+
+        # alias directive
+        alias = re.search(r'alias\s+([^;]*)', self._content)
+        self.alias = alias.group(1) if alias else None
 
         # chunked_transfer_encoding directive
         cte = re.search(r'chunked_transfer_encoding\s+(on|off);', self._content)
@@ -145,21 +139,9 @@ class HttpContext:
         timeout = re.search(r'client_body_timeout\s+([^;]*)', self._content)
         self.client_body_timeout = timeout.group(1) if timeout else '60s'
 
-        # client_header_buffer_size directive
-        chbs = re.search(r'client_header_buffer_size\s+([^;]*)', self._content)
-        self.client_header_buffer_size = chbs.group(1) if chbs else '1k'
-
-        # client_header_timeout directive
-        cht = re.search(r'client_header_timeout\s+([^;]*)', self._content)
-        self.client_header_timeout = cht.group(1) if cht else '60s'
-
         # client_max_body_size directive
         cmbs = re.search(r'client_max_body_size\s+([^;]*)', self._content)
         self.client_max_body_size = cmbs.group(1) if cmbs else '1m'
-
-        # connection_pool_size directive
-        cps = re.search(r'connection_pool_size\s+([^;]*)', self._content)
-        self.connection_pool_size = cps.group(1) if cps else '256|512'
 
         # default_type directive
         default_type = re.search(r'default_type\s+([^;]*)', self._content)
@@ -199,9 +181,8 @@ class HttpContext:
         if_modified_since = re.search(r'if_modified_since\s+(off|exact|before);', self._content)
         self.if_modified_since = if_modified_since.group(1) if if_modified_since else 'exact'
 
-        # ignore_invalid_headers directive
-        ignore_invalid_headers = re.search(r'ignore_invalid_headers\s+(on|off)', self._content)
-        self.ignore_invalid_headers = ignore_invalid_headers.group(1) if ignore_invalid_headers else 'on'
+        # internal directive
+        self.internal = 'internal;' in self._content
 
         # keepalive_disable directive
         keepalive_disable = re.search(r'keepalive_disable\s+([^;]*)', self._content)
@@ -224,16 +205,6 @@ class HttpContext:
                 timeout='75s',
                 header_timeout=None
             )
-
-        # large_client_header_buffers directive
-        large_client_header_buffers = re.search(r'large_client_header_buffers\s+(\d+)\s+([^;]*)', self._content)
-        self.large_client_header_buffers = dict(
-            number=int(large_client_header_buffers.group(1)),
-            size=large_client_header_buffers.group(2)
-        ) if large_client_header_buffers else dict(
-            number=4,
-            size='8k'
-        )
 
         # limit_rate directive
         limit_rate = re.search(r'limit_rate\s+([^;]*)', self._content)
@@ -266,10 +237,6 @@ class HttpContext:
         # max_ranges directive
         max_ranges = re.search(r'max_ranges\s+(\d+);', self._content)
         self.max_ranges = int(max_ranges.group(1)) if max_ranges else None
-
-        # merge_slashes directive
-        merge_slashes = re.search(r'merge_slashes\s+(on|off);', self._content)
-        self.merge_slashes = merge_slashes.group(1) if merge_slashes else 'on'
 
         # msie_padding directive
         msie_padding = re.search(r'msie_padding\s+(on|off);', self._content)
@@ -331,10 +298,6 @@ class HttpContext:
         recursive_error_pages = re.search(r'recursive_error_pages\s+(on|off);', self._content)
         self.recursive_error_pages = recursive_error_pages.group(1) if recursive_error_pages else 'off'
 
-        # request_pool_size directive
-        request_pool_size = re.search(r'request_pool_size\s+([^;]*)', self._content)
-        self.request_pool_size = request_pool_size.group(1) if request_pool_size else '4k'
-
         # reset_timedout_connection directive
         reset_timedout_connection = re.search(r'reset_timedout_connection\s+(on|off);', self._content)
         self.reset_timedout_connection = reset_timedout_connection.group(
@@ -388,15 +351,6 @@ class HttpContext:
         server_name_in_redirect = re.search(r'server_name_in_redirect\s+(on|off);', self._content)
         self.server_name_in_redirect = server_name_in_redirect.group(1) if server_name_in_redirect else 'off'
 
-        # server_names_hash_bucket_size directive
-        server_names_hash_bucket_size = re.search(r'server_names_hash_bucket_size\s+([^;]*)', self._content)
-        self.server_names_hash_bucket_size = server_names_hash_bucket_size.group(
-            1) if server_names_hash_bucket_size else '32|64|128'
-
-        # server_names_hash_max_size directive
-        server_names_hash_max_size = re.search(r'server_names_hash_max_size\s+([^;]*)', self._content)
-        self.server_names_hash_max_size = server_names_hash_max_size.group(1) if server_names_hash_max_size else '512'
-
         # server_tokens directive
         server_tokens = re.search(r'server_tokens\s+(on|off|build|[^;]*)', self._content)
         self.server_tokens = server_tokens.group(1) if server_tokens else 'on'
@@ -413,6 +367,12 @@ class HttpContext:
         # tcp_nopush directive
         tcp_nopush = re.search(r'tcp_nopush\s+(on|off);', self._content)
         self.tcp_nopush = tcp_nopush.group(1) if tcp_nopush else 'off'
+
+        # try_files directive
+        try_files = re.search(r'try_files\s+([^;]*)', self._content)
+        if try_files:
+            self.try_files = re.findall(r'([^\s]+)', try_files.group(1)) if try_files else None
+            self.try_files = self.try_files[0] if len(self.try_files) == 1 else self.try_files
 
         # types directive
         types = re.search(r'types\s+{([^}]*)', self._content)
@@ -431,16 +391,3 @@ class HttpContext:
         # types_hash_max_size directive
         types_hash_max_size = re.search(r'types_hash_max_size\s+([^;]*)', self._content)
         self.types_hash_max_size = types_hash_max_size.group(1) if types_hash_max_size else '1024'
-
-        # underscores_in_headers directive
-        underscores_in_headers = re.search(r'underscores_in_headers\s+(on|off);', self._content)
-        self.underscores_in_headers = underscores_in_headers.group(1) if underscores_in_headers else 'off'
-
-        # variables_hash_bucket_size directive
-        variables_hash_bucket_size = re.search(r'variables_hash_bucket_size\s+([^;]*)', self._content)
-        self.variables_hash_bucket_size = variables_hash_bucket_size.group(
-            1) if variables_hash_bucket_size else '64'
-
-        # variables_hash_max_size directive
-        variables_hash_max_size = re.search(r'variables_hash_max_size\s+([^;]*)', self._content)
-        self.variables_hash_max_size = variables_hash_max_size.group(1) if variables_hash_max_size else '1024'
