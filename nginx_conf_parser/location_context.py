@@ -1,11 +1,12 @@
 # coding=utf-8
 import re
-from .utils import extract_context
+
 from .limit_except_context import LimitExceptContext
 
 
 class LocationContext:
     absolute_redirect = None
+    accept = None
     aio = None
     aio_write = None
     alias = None
@@ -17,6 +18,7 @@ class LocationContext:
     client_body_timeout = None
     client_max_body_size = None
     default_type = None
+    deny = None
     directio = None
     directio_alignment = None
     disable_symlinks = None
@@ -75,10 +77,15 @@ class LocationContext:
             self.limit_except = dict()
             for _ in limit_except:
                 self.limit_except[_[0].strip()] = LimitExceptContext(_[1].strip())
+            self._content = re.sub(r'limit_except\s+\w+\s+{[^}]*}', '', self._content)
 
         # absolute_redirect directive
         abs_redirect = re.search(r'absolute_redirect\s+(on|off);', self._content)
         self.absolute_redirect = abs_redirect.group(1) if abs_redirect else 'off'
+
+        # accept directive
+        self.accept = re.findall(r'accept\s+([^;]*)', self._content)
+        self.accept = None if len(self.accept) == 0 else self.accept
 
         # aio directive
         aio = re.search(r'aio\s+(on|off|threads=?([^;]*)?);', self._content)
@@ -146,6 +153,10 @@ class LocationContext:
         # default_type directive
         default_type = re.search(r'default_type\s+([^;]*)', self._content)
         self.default_type = default_type.group(1) if default_type else 'text/plain'
+
+        # deny directive
+        self.deny = re.findall(r'deny\s+([^;]*)', self._content)
+        self.deny = None if len(self.deny) == 0 else self.deny
 
         # directio directive
         directio = re.search(r'directio\s+([^;]*)', self._content)

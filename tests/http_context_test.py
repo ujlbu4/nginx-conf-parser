@@ -38,6 +38,13 @@ class HttpContextTest(unittest.TestCase):
             }
             
             absolute_redirect on;
+            
+            accept 192.168.1.1;
+            accept 10.1.1.0/32;
+            
+            deny 192.168.1.2;
+            deny all;
+            
             aio on;
             aio_write on;
             chunked_transfer_encoding off;
@@ -119,6 +126,16 @@ class HttpContextTest(unittest.TestCase):
         self._update_directive('absolute_redirect on;', '')
         self.assertIsNotNone(self.http.absolute_redirect)
         self.assertEqual('off', self.http.absolute_redirect)
+
+    def test_accept_extraction(self):
+        self.assertIsNotNone(self.http.accept)
+        self.assertIsInstance(self.http.accept, list)
+        self.assertEqual(2, len(self.http.accept))
+        self.assertEqual({'192.168.1.1', '10.1.1.0/32'}, set(self.http.accept))
+
+        self._update_directive('accept 192.168.1.1;', '')
+        self._update_directive('accept 10.1.1.0/32;', '')
+        self.assertIsNone(self.http.accept)
 
     def test_aio_extraction(self):
         self.assertIsNotNone(self.http.aio)
@@ -292,6 +309,16 @@ class HttpContextTest(unittest.TestCase):
         self._update_directive('default_type application/json;', '')
         self.assertIsNotNone(self.http.default_type)
         self.assertEqual('text/plain', self.http.default_type)
+
+    def test_deny_extraction(self):
+        self.assertIsNotNone(self.http.deny)
+        self.assertIsInstance(self.http.deny, list)
+        self.assertEqual(2, len(self.http.deny))
+        self.assertEqual({'192.168.1.2', 'all'}, set(self.http.deny))
+
+        self._update_directive('deny 192.168.1.2;', '')
+        self._update_directive('deny all;', '')
+        self.assertIsNone(self.http.deny)
 
     def test_directio_extracion(self):
         self.assertIsNotNone(self.http.directio)

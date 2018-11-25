@@ -9,6 +9,7 @@ class HttpContext:
     """Extract http context from the given string"""
     servers = []
     absolute_redirect = None
+    accept = None
     aio = None
     aio_write = None
     chunked_transfer_encoding = None
@@ -22,6 +23,7 @@ class HttpContext:
     client_max_body_size = None
     connection_pool_size = None
     default_type = None
+    deny = None
     directio = None
     directio_alignment = None
     disable_symlinks = None
@@ -85,6 +87,10 @@ class HttpContext:
             server = extract_context(self._content, 'server')
             self.servers.append(ServerContext(server))
             self._content = self._content.replace(server, '')
+
+        # accept directive
+        self.accept = re.findall(r'accept\s+([^;]*)', self._content)
+        self.accept = None if len(self.accept) == 0 else self.accept
 
         # absolute_redirect directive
         abs_redirect = re.search(r'absolute_redirect\s+(on|off);', self._content)
@@ -164,6 +170,10 @@ class HttpContext:
         # default_type directive
         default_type = re.search(r'default_type\s+([^;]*)', self._content)
         self.default_type = default_type.group(1) if default_type else 'text/plain'
+
+        # deny directive
+        self.deny = re.findall(r'deny\s+([^;]*)', self._content)
+        self.deny = None if len(self.deny) == 0 else self.deny
 
         # directio directive
         directio = re.search(r'directio\s+([^;]*)', self._content)

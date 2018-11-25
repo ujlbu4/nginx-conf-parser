@@ -22,6 +22,13 @@ class LocationContextTest(unittest.TestCase):
                 application/octet-stream dmg;
             }
             absolute_redirect on;
+            
+            accept 192.168.1.1;
+            accept 10.1.1.0/32;
+            
+            deny 192.168.1.2;
+            deny all;
+            
             aio on;
             aio_write on;
             alias /data/w3/images/;
@@ -94,6 +101,16 @@ class LocationContextTest(unittest.TestCase):
         self._update_directive('absolute_redirect on;', '')
         self.assertIsNotNone(self.location.absolute_redirect)
         self.assertEqual('off', self.location.absolute_redirect)
+
+    def test_accept_extraction(self):
+        self.assertIsNotNone(self.location.accept)
+        self.assertIsInstance(self.location.accept, list)
+        self.assertEqual(2, len(self.location.accept))
+        self.assertEqual({'192.168.1.1', '10.1.1.0/32'}, set(self.location.accept))
+
+        self._update_directive('accept 192.168.1.1;', '')
+        self._update_directive('accept 10.1.1.0/32;', '')
+        self.assertIsNone(self.location.accept)
 
     def test_aio_extraction(self):
         self.assertIsNotNone(self.location.aio)
@@ -250,6 +267,16 @@ class LocationContextTest(unittest.TestCase):
         self._update_directive('default_type application/json;', '')
         self.assertIsNotNone(self.location.default_type)
         self.assertEqual('text/plain', self.location.default_type)
+
+    def test_deny_extraction(self):
+        self.assertIsNotNone(self.location.deny)
+        self.assertIsInstance(self.location.deny, list)
+        self.assertEqual(2, len(self.location.deny))
+        self.assertEqual({'192.168.1.2', 'all'}, set(self.location.deny))
+
+        self._update_directive('deny 192.168.1.2;', '')
+        self._update_directive('deny all;', '')
+        self.assertIsNone(self.location.deny)
 
     def test_directio_extracion(self):
         self.assertIsNotNone(self.location.directio)

@@ -23,6 +23,13 @@ class ServerContextTest(unittest.TestCase):
                 application/octet-stream dmg;
             }
             absolute_redirect on;
+            
+            accept 192.168.1.1;
+            accept 10.1.1.0/32;
+            
+            deny 192.168.1.2;
+            deny all;
+            
             aio on;
             aio_write on;
             chunked_transfer_encoding off;
@@ -116,6 +123,16 @@ class ServerContextTest(unittest.TestCase):
         self._update_directive('absolute_redirect on;', '')
         self.assertIsNotNone(self.server.absolute_redirect)
         self.assertEqual('off', self.server.absolute_redirect)
+
+    def test_accept_extraction(self):
+        self.assertIsNotNone(self.server.accept)
+        self.assertIsInstance(self.server.accept, list)
+        self.assertEqual(2, len(self.server.accept))
+        self.assertEqual({'192.168.1.1', '10.1.1.0/32'}, set(self.server.accept))
+
+        self._update_directive('accept 192.168.1.1;', '')
+        self._update_directive('accept 10.1.1.0/32;', '')
+        self.assertIsNone(self.server.accept)
 
     def test_aio_extraction(self):
         self.assertIsNotNone(self.server.aio)
@@ -289,6 +306,16 @@ class ServerContextTest(unittest.TestCase):
         self._update_directive('default_type application/json;', '')
         self.assertIsNotNone(self.server.default_type)
         self.assertEqual('text/plain', self.server.default_type)
+
+    def test_deny_extraction(self):
+        self.assertIsNotNone(self.server.deny)
+        self.assertIsInstance(self.server.deny, list)
+        self.assertEqual(2, len(self.server.deny))
+        self.assertEqual({'192.168.1.2', 'all'}, set(self.server.deny))
+
+        self._update_directive('deny 192.168.1.2;', '')
+        self._update_directive('deny all;', '')
+        self.assertIsNone(self.server.deny)
 
     def test_directio_extracion(self):
         self.assertIsNotNone(self.server.directio)
