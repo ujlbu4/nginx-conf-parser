@@ -1,5 +1,6 @@
 # coding=utf-8
 import re
+from .location_context import LocationContext
 
 
 class ServerContext:
@@ -73,11 +74,12 @@ class ServerContext:
     underscores_in_headers = None
 
     def __init__(self, content):
-        # extracting location directive
-        self.location = [_ + '}' for _ in re.findall(r'(location[^}]*)', content)]
         self._content = content
-        for loc in self.location:
-            # TODO: parse directly location from here
+
+        # extracting location directive
+        location = [_ + '}' for _ in re.findall(r'(location[^}]*)', self._content)]
+        self.location = [LocationContext(_) for _ in location]
+        for loc in location:
             self._content = self._content.replace(loc, '')
 
         # absolute_redirect directive

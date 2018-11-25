@@ -2,6 +2,7 @@
 import unittest
 
 from nginx_conf_parser.server_context import ServerContext
+from nginx_conf_parser.location_context import LocationContext
 
 
 class ServerContextTest(unittest.TestCase):
@@ -100,6 +101,13 @@ class ServerContextTest(unittest.TestCase):
     def _update_directive(self, initial, new):
         self.context_string = self.context_string.replace(initial, new)
         self.server = ServerContext(self.context_string)
+
+    def test_location_extraction(self):
+        self.assertIsInstance(self.server.location, list)
+        self.assertEqual(2, len(self.server.location))
+
+        for _ in self.server.location:
+            self.assertIsInstance(_, LocationContext)
 
     def test_absolute_redirect_extraction(self):
         self.assertIsNotNone(self.server.absolute_redirect)
