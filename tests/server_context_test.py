@@ -92,6 +92,9 @@ class ServerContextTest(unittest.TestCase):
             try_files $uri $uri/index.html $uri.html =404;
             types_hash_bucket_size 14m;
             types_hash_max_size 512;
+            underscores_in_headers off;
+            variables_hash_bucket_size 128;
+            variables_hash_max_size 2048;
         }
         """
         self.server = ServerContext(self.context_string.replace('\n', ' '))
@@ -929,17 +932,32 @@ class ServerContextTest(unittest.TestCase):
         self.assertIsNotNone(self.server.types_hash_max_size)
         self.assertEqual('1024', self.server.types_hash_max_size)
 
-    @unittest.skip('TBD')
     def test_underscores_in_headers_extraction(self):
-        pass
+        self.assertIsNotNone(self.server.underscores_in_headers)
+        self.assertEqual('off', self.server.underscores_in_headers)
 
-    @unittest.skip('TBD')
+        self._update_directive('underscores_in_headers off;', 'underscores_in_headers on;')
+        self.assertEqual('on', self.server.underscores_in_headers)
+
+        self._update_directive('underscores_in_headers on;', '')
+        self.assertIsNotNone(self.server.underscores_in_headers)
+        self.assertEqual('off', self.server.underscores_in_headers)
+
     def test_variables_hash_bucket_size_extraction(self):
-        pass
+        self.assertIsNotNone(self.server.variables_hash_bucket_size)
+        self.assertEqual('128', self.server.variables_hash_bucket_size)
 
-    @unittest.skip('TBD')
+        self._update_directive('variables_hash_bucket_size 128;', '')
+        self.assertIsNotNone(self.server.variables_hash_bucket_size)
+        self.assertEqual('64', self.server.variables_hash_bucket_size)
+
     def test_variables_hash_max_size_extraction(self):
-        pass
+        self.assertIsNotNone(self.server.variables_hash_max_size)
+        self.assertEqual('2048', self.server.variables_hash_max_size)
+
+        self._update_directive('variables_hash_max_size 2048;', '')
+        self.assertIsNotNone(self.server.variables_hash_max_size)
+        self.assertEqual('1024', self.server.variables_hash_max_size)
 
 
 if __name__ == '__main__':
