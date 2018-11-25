@@ -1,6 +1,7 @@
 # coding=utf-8
 import unittest
 from nginx_conf_parser.location_context import LocationContext
+from nginx_conf_parser.limit_except_context import LimitExceptContext
 
 
 class LocationContextTest(unittest.TestCase):
@@ -381,7 +382,9 @@ class LocationContextTest(unittest.TestCase):
         self.assertIsInstance(self.location.limit_except, dict)
         self.assertEqual(2, len(self.location.limit_except.keys()))
         self.assertEqual({'GET', 'POST'}, set(self.location.limit_except.keys()))
-        # TODO: finish
+
+        self.assertIsInstance(self.location.limit_except.get('GET'), LimitExceptContext)
+        self.assertIsInstance(self.location.limit_except.get('POST'), LimitExceptContext)
 
     def test_limit_rate_extraction(self):
         self.assertIsNotNone(self.location.limit_rate)

@@ -1,6 +1,7 @@
 # coding=utf-8
 import re
 from .utils import extract_context
+from .limit_except_context import LimitExceptContext
 
 
 class LocationContext:
@@ -73,8 +74,7 @@ class LocationContext:
         if limit_except:
             self.limit_except = dict()
             for _ in limit_except:
-                # TODO: convert directly with limit_except_context
-                self.limit_except[_[0].strip()] = _[1].strip()
+                self.limit_except[_[0].strip()] = LimitExceptContext(_[1].strip())
 
         # absolute_redirect directive
         abs_redirect = re.search(r'absolute_redirect\s+(on|off);', self._content)
