@@ -13,6 +13,8 @@ class LimitExceptContextTest(unittest.TestCase):
             allow 10.1.1.0/16;
             allow 2001:0db8::/32;
             deny  all;
+            
+            auth_jwt "closed site" token=$cookie_auth_token;
         }
         """
         self.limit_except = LimitExceptContext(self.context_string.replace('\n', ' '))
@@ -33,6 +35,25 @@ class LimitExceptContextTest(unittest.TestCase):
         self.assertIsInstance(self.limit_except.deny, list)
         self.assertEqual(2, len(self.limit_except.deny))
         self.assertEqual({'192.168.1.1', 'all'}, set(self.limit_except.deny))
+
+    def test_auth_jwt_extraction(self):
+        self.assertIsNotNone(self.limit_except.auth_jwt)
+        self.assertIsInstance(self.limit_except.auth_jwt, dict)
+        self.assertEqual({'realm', 'token'}, set(self.limit_except.auth_jwt.keys()))
+        self.assertEqual('"closed site"', self.limit_except.auth_jwt.get('realm'))
+
+        self._update_directive('auth_jwt "closed site" token=$cookie_auth_token;', 'auth_jwt "closed site";')
+        self.assertIsInstance(self.limit_except.auth_jwt, dict)
+        self.assertEqual('"closed site"', self.limit_except.auth_jwt.get('realm'))
+        self.assertIsNone(self.limit_except.auth_jwt.get('token'))
+
+        self._update_directive('auth_jwt "closed site";', 'auth_jwt off;')
+        self.assertIsInstance(self.limit_except.auth_jwt, str)
+        self.assertEqual('off',self.limit_except.auth_jwt)
+
+        self._update_directive('auth_jwt off;', '')
+        self.assertIsInstance(self.limit_except.auth_jwt, str)
+        self.assertEqual('off', self.limit_except.auth_jwt)
 
 
 if __name__ == '__main__':

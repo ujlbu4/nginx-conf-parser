@@ -32,6 +32,7 @@ class LocationContextTest(unittest.TestCase):
             aio on;
             aio_write on;
             alias /data/w3/images/;
+            auth_jwt "closed site" token=$cookie_auth_token;
             chunked_transfer_encoding off;
             client_body_buffer_size 82k;
             client_body_in_file_only clean;
@@ -150,6 +151,25 @@ class LocationContextTest(unittest.TestCase):
 
         self._update_directive('alias /data/w3/images/;', '')
         self.assertIsNone(self.location.alias)
+
+    def test_auth_jwt_extraction(self):
+        self.assertIsNotNone(self.location.auth_jwt)
+        self.assertIsInstance(self.location.auth_jwt, dict)
+        self.assertEqual({'realm', 'token'}, set(self.location.auth_jwt.keys()))
+        self.assertEqual('"closed site"', self.location.auth_jwt.get('realm'))
+
+        self._update_directive('auth_jwt "closed site" token=$cookie_auth_token;', 'auth_jwt "closed site";')
+        self.assertIsInstance(self.location.auth_jwt, dict)
+        self.assertEqual('"closed site"', self.location.auth_jwt.get('realm'))
+        self.assertIsNone(self.location.auth_jwt.get('token'))
+
+        self._update_directive('auth_jwt "closed site";', 'auth_jwt off;')
+        self.assertIsInstance(self.location.auth_jwt, str)
+        self.assertEqual('off', self.location.auth_jwt)
+
+        self._update_directive('auth_jwt off;', '')
+        self.assertIsInstance(self.location.auth_jwt, str)
+        self.assertEqual('off', self.location.auth_jwt)
 
     def test_chunked_transfer_encoding_extraction(self):
         self.assertIsNotNone(self.location.chunked_transfer_encoding)

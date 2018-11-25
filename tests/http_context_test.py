@@ -47,6 +47,7 @@ class HttpContextTest(unittest.TestCase):
             
             aio on;
             aio_write on;
+            auth_jwt "closed site" token=$cookie_auth_token;
             chunked_transfer_encoding off;
             client_body_buffer_size 82k;
             client_body_in_file_only clean;
@@ -168,6 +169,25 @@ class HttpContextTest(unittest.TestCase):
         self._update_directive('aio_write off;', '')
         self.assertIsNotNone(self.http.aio_write)
         self.assertEqual('off', self.http.aio_write)
+
+    def test_auth_jwt_extraction(self):
+        self.assertIsNotNone(self.http.auth_jwt)
+        self.assertIsInstance(self.http.auth_jwt, dict)
+        self.assertEqual({'realm', 'token'}, set(self.http.auth_jwt.keys()))
+        self.assertEqual('"closed site"', self.http.auth_jwt.get('realm'))
+
+        self._update_directive('auth_jwt "closed site" token=$cookie_auth_token;', 'auth_jwt "closed site";')
+        self.assertIsInstance(self.http.auth_jwt, dict)
+        self.assertEqual('"closed site"', self.http.auth_jwt.get('realm'))
+        self.assertIsNone(self.http.auth_jwt.get('token'))
+
+        self._update_directive('auth_jwt "closed site";', 'auth_jwt off;')
+        self.assertIsInstance(self.http.auth_jwt, str)
+        self.assertEqual('off',self.http.auth_jwt)
+
+        self._update_directive('auth_jwt off;', '')
+        self.assertIsInstance(self.http.auth_jwt, str)
+        self.assertEqual('off', self.http.auth_jwt)
 
     def test_chunked_transfer_encoding_extraction(self):
         self.assertIsNotNone(self.http.chunked_transfer_encoding)

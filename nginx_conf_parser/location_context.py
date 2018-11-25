@@ -10,6 +10,7 @@ class LocationContext:
     aio = None
     aio_write = None
     alias = None
+    auth_jwt = None
     chunked_transfer_encoding = None
     client_body_buffer_size = None
     client_body_in_file_only = None
@@ -103,6 +104,17 @@ class LocationContext:
         # alias directive
         alias = re.search(r'alias\s+([^;]*)', self._content)
         self.alias = alias.group(1) if alias else None
+
+        # auth_jwt directive
+        auth_jwt = re.search(r'auth_jwt\s+([^;]*)', self._content)
+        if not auth_jwt or auth_jwt.group(1) == 'off':
+            self.auth_jwt = 'off'
+        else:
+            _ = re.search(r'"(.*)"\s*(token=(.*))?', auth_jwt.group(1))
+            self.auth_jwt = dict(
+                realm='"{0}"'.format(_.group(1)),
+                token=_.group(3) if _.group(3) else None
+            )
 
         # chunked_transfer_encoding directive
         cte = re.search(r'chunked_transfer_encoding\s+(on|off);', self._content)
