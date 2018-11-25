@@ -66,6 +66,7 @@ class ServerContext:
     subrequest_output_buffer_size = None
     tcp_nodelay = None
     tcp_nopush = None
+    try_files = None
     types = None
     types_hash_bucket_size = None
     types_hash_max_size = None
@@ -440,6 +441,12 @@ class ServerContext:
         # tcp_nopush directive
         tcp_nopush = re.search(r'tcp_nopush\s+(on|off);', self._content)
         self.tcp_nopush = tcp_nopush.group(1) if tcp_nopush else 'off'
+
+        # try_files directive
+        try_files = re.search(r'try_files\s+([^;]*)', self._content)
+        if try_files:
+            self.try_files = re.findall(r'([^\s]+)', try_files.group(1)) if try_files else None
+            self.try_files = self.try_files[0] if len(self.try_files) == 1 else self.try_files
 
         # types directive
         types = re.search(r'types\s+{([^}]*)', self._content)
