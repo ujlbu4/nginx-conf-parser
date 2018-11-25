@@ -93,8 +93,6 @@ class ServerContextTest(unittest.TestCase):
             types_hash_bucket_size 14m;
             types_hash_max_size 512;
             underscores_in_headers off;
-            variables_hash_bucket_size 128;
-            variables_hash_max_size 2048;
         }
         """
         self.server = ServerContext(self.context_string.replace('\n', ' '))
@@ -942,22 +940,6 @@ class ServerContextTest(unittest.TestCase):
         self._update_directive('underscores_in_headers on;', '')
         self.assertIsNotNone(self.server.underscores_in_headers)
         self.assertEqual('off', self.server.underscores_in_headers)
-
-    def test_variables_hash_bucket_size_extraction(self):
-        self.assertIsNotNone(self.server.variables_hash_bucket_size)
-        self.assertEqual('128', self.server.variables_hash_bucket_size)
-
-        self._update_directive('variables_hash_bucket_size 128;', '')
-        self.assertIsNotNone(self.server.variables_hash_bucket_size)
-        self.assertEqual('64', self.server.variables_hash_bucket_size)
-
-    def test_variables_hash_max_size_extraction(self):
-        self.assertIsNotNone(self.server.variables_hash_max_size)
-        self.assertEqual('2048', self.server.variables_hash_max_size)
-
-        self._update_directive('variables_hash_max_size 2048;', '')
-        self.assertIsNotNone(self.server.variables_hash_max_size)
-        self.assertEqual('1024', self.server.variables_hash_max_size)
 
 
 if __name__ == '__main__':
