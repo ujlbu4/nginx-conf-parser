@@ -48,6 +48,10 @@ class HttpContextTest(unittest.TestCase):
             aio on;
             aio_write on;
             auth_jwt "closed site" token=$cookie_auth_token;
+            auth_jwt_claim_set $email info e-mail;
+            auth_jwt_claim_set $job info "job title";
+            auth_jwt_header_set $variable1 name1 "name 2";
+            auth_jwt_header_set $variable2 name3 "name 4";
             chunked_transfer_encoding off;
             client_body_buffer_size 82k;
             client_body_in_file_only clean;
@@ -183,11 +187,41 @@ class HttpContextTest(unittest.TestCase):
 
         self._update_directive('auth_jwt "closed site";', 'auth_jwt off;')
         self.assertIsInstance(self.http.auth_jwt, str)
-        self.assertEqual('off',self.http.auth_jwt)
+        self.assertEqual('off', self.http.auth_jwt)
 
         self._update_directive('auth_jwt off;', '')
         self.assertIsInstance(self.http.auth_jwt, str)
         self.assertEqual('off', self.http.auth_jwt)
+
+    def test_auth_jwt_claim_set_extraction(self):
+        self.assertIsNotNone(self.http.auth_jwt_claim_set)
+        self.assertIsInstance(self.http.auth_jwt_claim_set, list)
+        self.assertEqual(2, len(self.http.auth_jwt_claim_set))
+
+        self.assertIn('$email', [_.get('variable') for _ in self.http.auth_jwt_claim_set])
+        self.assertIn('$job', [_.get('variable') for _ in self.http.auth_jwt_claim_set])
+
+        self.assertIn({'info', 'e-mail'}, [set(_.get('names')) for _ in self.http.auth_jwt_claim_set])
+        self.assertIn({'info', '"job title"'}, [set(_.get('names')) for _ in self.http.auth_jwt_claim_set])
+
+        self._update_directive('auth_jwt_claim_set $email info e-mail;', '')
+        self._update_directive('auth_jwt_claim_set $job info "job title";', '')
+        self.assertIsNone(self.http.auth_jwt_claim_set)
+
+    def test_auth_jwt_header_set_extraction(self):
+        self.assertIsNotNone(self.http.auth_jwt_header_set)
+        self.assertIsInstance(self.http.auth_jwt_header_set, list)
+        self.assertEqual(2, len(self.http.auth_jwt_header_set))
+
+        self.assertIn('$variable1', [_.get('variable') for _ in self.http.auth_jwt_header_set])
+        self.assertIn('$variable2', [_.get('variable') for _ in self.http.auth_jwt_header_set])
+
+        self.assertIn({'name1', '"name 2"'}, [set(_.get('names')) for _ in self.http.auth_jwt_header_set])
+        self.assertIn({'name3', '"name 4"'}, [set(_.get('names')) for _ in self.http.auth_jwt_header_set])
+
+        self._update_directive('auth_jwt_header_set $variable1 name1 "name 2";', '')
+        self._update_directive('auth_jwt_header_set $variable2 name3 "name 4";', '')
+        self.assertIsNone(self.http.auth_jwt_header_set)
 
     def test_chunked_transfer_encoding_extraction(self):
         self.assertIsNotNone(self.http.chunked_transfer_encoding)
