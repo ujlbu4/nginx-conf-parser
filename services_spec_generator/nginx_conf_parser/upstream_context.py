@@ -5,6 +5,7 @@ from .utils import extract_upstream_zone
 
 
 class UpstreamContext:
+    git_project = None
     name = None
     servers = []
     zone = None
@@ -24,12 +25,16 @@ class UpstreamContext:
     def __init__(self, name, content):
         self.name = name
 
+        # git project
+        git_project = re.search(r'\s*#\s*git[:]?\s*(http[^;]*)', content)
+        self.git_project = git_project.group(1) if git_project else None
+
         # zone directive
         self.zone = extract_upstream_zone(content)
 
         # server directive
         self.servers = []
-        servers = re.findall(r'server\s+([^\s]*)\s*([^;]*)', content)
+        servers = re.findall(r'server\s+([^\s;]*)\s*([^;]*)', content)
         for server in servers:
             self.servers.append({
                 'address': server[0],

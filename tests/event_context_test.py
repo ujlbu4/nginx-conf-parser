@@ -1,7 +1,7 @@
 # coding=utf-8
 import unittest
-from nginx_conf_parser.events_context import EventContext
-from nginx_conf_parser.utils import extract_context
+from parser.nginx_conf_parser import EventContext
+from parser.nginx_conf_parser import extract_context
 
 
 class EventContextTest(unittest.TestCase):

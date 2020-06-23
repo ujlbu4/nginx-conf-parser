@@ -2,6 +2,7 @@
 import re
 
 from .limit_except_context import LimitExceptContext
+from .utils import extract_context
 
 
 class LocationContext:
@@ -48,8 +49,11 @@ class LocationContext:
     open_file_cache_min_uses = None
     open_file_cache_valid = None
     output_buffers = None
+    path = None
     port_in_redirect = None
     postpone_output = None
+    proxy_pass = None
+    proxy_pass_upstream = None
     read_ahead = None
     recursive_error_pages = None
     reset_timedout_connection = None
@@ -315,6 +319,10 @@ class LocationContext:
             size='32k'
         )
 
+        # path location
+        path = re.search(r'location\s*(.*)\s*\{', self._content)
+        self.path = path.group(1) if path else None
+
         # port_in_redirect directive
         port_in_redirect = re.search(r'port_in_redirect\s+(on|off);', self._content)
         self.port_in_redirect = port_in_redirect.group(1) if port_in_redirect else 'on'
@@ -322,6 +330,14 @@ class LocationContext:
         # postpone_output directive
         postpone_output = re.search(r'postpone_output\s+([^;]*)', self._content)
         self.postpone_output = postpone_output.group(1) if postpone_output else '1460'
+
+        # proxy_pass directive
+        proxy_pass = re.search(r'proxy_pass\s+([^;]*)', self._content)
+        self.proxy_pass = proxy_pass.group(1) if proxy_pass else None
+
+        # resolve proxy_pass_upstream
+        proxy_pass_upstream = re.search(r'http[s]?:\/\/([^\/;]*)', self._content)
+        self.proxy_pass_upstream = proxy_pass_upstream.group(1) if proxy_pass_upstream else None
 
         # read_ahead directive
         read_ahead = re.search(r'read_ahead\s+([^;]*)', self._content)

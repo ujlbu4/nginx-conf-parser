@@ -1,7 +1,7 @@
 # coding=utf-8
 import unittest
 
-from nginx_conf_parser.main_context import MainContext
+from parser.nginx_conf_parser import MainContext
 
 
 class MainContextTest(unittest.TestCase):

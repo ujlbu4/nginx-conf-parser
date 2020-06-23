@@ -1,5 +1,6 @@
 # coding=utf-8
 import re
+from typing import List
 
 from .server_context import ServerContext
 from .upstream_context import UpstreamContext
@@ -8,8 +9,8 @@ from .utils import extract_context
 
 class HttpContext:
     """Extract http context from the given string"""
-    servers = []
-    upstreams = None
+    servers: List[ServerContext] = []
+    upstreams: List[UpstreamContext] = None
     absolute_redirect = None
     accept = None
     aio = None
@@ -90,11 +91,11 @@ class HttpContext:
         self._content = content.replace('\n', ' ')
 
         # extracting upstream
-        upstreams = re.findall(r'upstream\s+([^{]*){([^}]*)', self._content)
+        upstreams = re.findall(r'\bupstream\s+([^{]*){([^}]*)', self._content)
         self.upstreams = []
         for upstream in upstreams:
             self.upstreams.append(UpstreamContext(upstream[0].strip(), upstream[1]))
-        self._content = re.sub('upstream\s+[^{]*{[^}]*}', '', self._content)
+        self._content = re.sub('\bupstream\s+[^{]*{[^}]*}', '', self._content)
 
         # extracting servers
         while extract_context(self._content, 'server') != '':

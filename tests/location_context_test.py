@@ -1,7 +1,7 @@
 # coding=utf-8
 import unittest
-from nginx_conf_parser.location_context import LocationContext
-from nginx_conf_parser.limit_except_context import LimitExceptContext
+from parser.nginx_conf_parser.location_context import LocationContext
+from parser.nginx_conf_parser import LimitExceptContext
 
 
 class LocationContextTest(unittest.TestCase):

@@ -1,8 +1,8 @@
 # coding=utf-8
 import unittest
 
-from nginx_conf_parser.http_context import HttpContext
-from nginx_conf_parser.upstream_context import UpstreamContext
+from parser.nginx_conf_parser.http_context import HttpContext
+from parser.nginx_conf_parser.upstream_context import UpstreamContext
 
 
 class HttpContextTest(unittest.TestCase):

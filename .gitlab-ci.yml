@@ -1,0 +1,85 @@
+default:
+  image: python:3.7-slim
+  services:
+    - docker:dind
+  tags: ['docker']
+
+include:
+  - project: yourltd/misc/ops
+    ref: master
+    file: cicd-includes/global-default-variables.yml
+  - project: yourltd/misc/ops
+    ref: master
+    file: cicd-includes/semantic-release.yml
+
+
+variables:
+  SEMANTIC_RELEASE_PACKAGE: Generate html-table with services from nginx confs
+
+
+stages:
+  - test
+  - release
+  - publish
+
+
+
+.anchors:
+  - &extract_version |
+    export version=$(cat version)-$CI_PIPELINE_ID-$CI_COMMIT_REF_SLUG
+    if [[ -z "$CI_COMMIT_TAG"  ]]; then
+      export version=$version;
+    else export version=$CI_COMMIT_TAG; fi
+    echo "======= version ======="; echo $version; echo "======================="
+  - &setup_pypi |
+    echo "[distutils]" > ${HOME}/.pypirc;
+    echo "index-servers =" >> ${HOME}/.pypirc;
+    echo "  pypi-yourltd" >> ${HOME}/.pypirc;
+    echo "[pypi-yourltd]" >> ${HOME}/.pypirc;
+    echo "  repository: ${REGISTRY_URL}" >> ${HOME}/.pypirc;
+    echo "  username: ${PYPI_PUBLISHER_USER}" >> ${HOME}/.pypirc;
+    echo "  password: ${PYPI_PUBLISHER_PASSWORD}" >> ${HOME}/.pypirc;
+    cat ~/.pypirc;
+    env;
+
+
+
+
+publish dev:
+  stage: publish
+  variables:
+    REGISTRY_URL: ${REGISTRY_PYPI_SNAPSHOT_URL}
+  before_script:
+    - *setup_pypi
+  script:
+    - *extract_version
+    - echo $version > version
+    - python3 setup.py sdist upload -r pypi-yourltd --show-response
+  only:
+    - branches
+  except:
+    - master  # for master uses tags (look below)
+
+
+publish stable:
+  stage: publish
+  variables:
+    # differs by releases registry url
+    REGISTRY_URL: ${REGISTRY_PYPI_RELEASE_URL}
+  before_script:
+    - *setup_pypi
+  script:
+    - *extract_version
+    - echo $version > version
+    - python3 setup.py sdist upload -r pypi-yourltd --show-response
+  only:
+    - tags
+
+
+release:
+  extends: .semantic release # from included templates
+  stage: release
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'master' && $CI_COMMIT_TITLE !~ /^RELEASE:.+$/
+      when: on_success
+

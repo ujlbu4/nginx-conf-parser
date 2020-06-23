@@ -2,7 +2,7 @@
 import re
 import unittest
 
-from nginx_conf_parser.upstream_context import UpstreamContext
+from parser.nginx_conf_parser.upstream_context import UpstreamContext
 
 
 class UpstreamTest(unittest.TestCase):

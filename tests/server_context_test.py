@@ -1,8 +1,8 @@
 # coding=utf-8
 import unittest
 
-from nginx_conf_parser.server_context import ServerContext
-from nginx_conf_parser.location_context import LocationContext
+from parser.nginx_conf_parser import ServerContext
+from parser.nginx_conf_parser.location_context import LocationContext
 
 
 class ServerContextTest(unittest.TestCase):
